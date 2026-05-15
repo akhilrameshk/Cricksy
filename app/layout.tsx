@@ -1,4 +1,5 @@
 import "./globals.css";
+import { ThemeProvider } from "./providers";
 
 export const metadata = {
   title: "Sports Management",
@@ -11,8 +12,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import Navbar from "@/app/components/Navbar";
 
 const Chip = ({ label, type = "default" }: any) => {
   const styles: any = {
@@ -81,7 +82,7 @@ export default function TournamentDetailsPage() {
     setSelectedMatch(match);
     setViewOnlyLineup(viewOnly);
     setLineupModal(true);
-console.log(match,"Selected match for lineup:");
+console.log(match,"")
     const teamA = teams.find(
       (t) =>
         t.teamName?.trim().toLowerCase() === match.teamA?.trim().toLowerCase()
@@ -222,7 +223,7 @@ console.log(match,"Selected match for lineup:");
               >
                 ← Back to Tournaments
               </Link>
-
+<Navbar />
               <h1 className="mt-3 text-3xl font-black text-white sm:text-5xl">
                 Match List
               </h1>
@@ -311,7 +312,6 @@ console.log(match,"Selected match for lineup:");
                     >
                       Add Score →
                     </Link>
-                    
                   </div>
 
                   <div className="mt-3 text-center text-xs text-white">

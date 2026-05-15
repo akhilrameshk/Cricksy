@@ -3,17 +3,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  Activity,
-  BellRing,
-  CalendarDays,
-  ChevronRight,
-  Flame,
-  Radio,
-  Shield,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
+import Navbar from "./components/Navbar";
 
 type Match = {
   _id: string;
@@ -25,8 +15,6 @@ type Match = {
   score?: string;
   result?: string;
 };
-
-const caption = "Cricksy — Where cricket never stops scoring.";
 
 export default function HomePage() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -44,219 +32,172 @@ export default function HomePage() {
   ).length;
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#031008] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(132,255,94,0.22),transparent_34%),radial-gradient(circle_at_80%_10%,rgba(255,168,0,0.18),transparent_30%),linear-gradient(180deg,#06180d_0%,#020403_70%)]" />
+    <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-gray-900 dark:text-white transition-colors duration-300">
+      <Navbar />
 
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3 no-underline">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-lime-300 to-emerald-500 shadow-lg shadow-emerald-500/30">
-            <Trophy className="h-6 w-6 text-emerald-950" />
-          </div>
-          <div>
-            <p className="text-2xl font-black tracking-tight text-white">Cricksy</p>
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-lime-300">Live cricket</p>
-          </div>
-        </Link>
-
-        <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 backdrop-blur md:flex">
-          <Radio className="h-4 w-4 text-red-400" />
-          {liveCount || 0} live now
-        </div>
-      </header>
-
-      <main className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-        <section className="grid items-center gap-8 py-8 lg:grid-cols-[1.1fr_0.9fr] lg:py-14">
-          <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-lime-300/25 bg-lime-300/10 px-4 py-2 text-sm font-bold text-lime-200">
-              <Sparkles className="h-4 w-4" />
-              {caption}
+      <main className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        {/* Hero Section */}
+        <section className="mb-16 py-8">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 p-8 md:p-12 shadow-lg dark:shadow-2xl dark:shadow-orange-500/10">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-orange-100 dark:bg-orange-500/20 px-4 py-2">
+              <i className="fa-solid fa-cricket text-orange-600 dark:text-orange-400"></i>
+              <span className="text-sm font-bold text-orange-600 dark:text-orange-400">Welcome to Tournament Hub</span>
             </div>
 
-            <h1 className="max-w-4xl text-5xl font-black leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
-              Your cricket world, <span className="bg-gradient-to-r from-lime-300 via-emerald-300 to-yellow-200 bg-clip-text text-transparent">live in every moment.</span>
+            <h1 className="mb-4 text-4xl md:text-5xl font-black text-gray-900 dark:text-white">
+              Cricket Tournament
+              <span className="ml-3 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">Management</span>
             </h1>
 
-            <p className="mt-6 max-w-2xl text-base leading-8 text-white/65 sm:text-lg">
-              Follow live scores, match results, tournament updates, and every big cricket moment with a fast, modern, fan-first experience.
+            <p className="mb-8 max-w-2xl text-lg text-gray-600 dark:text-gray-300">
+              Manage tournaments, teams, players, and live scores all in one place. Experience modern cricket tournament management like never before.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="#matches"
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-lime-300 to-emerald-400 px-7 py-4 font-black text-emerald-950 shadow-2xl shadow-emerald-500/20 transition hover:scale-105"
-              >
-                View Matches <ChevronRight className="ml-2 h-5 w-5" />
-              </a>
+            <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/tournaments"
-                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/7 px-7 py-4 font-bold text-white no-underline backdrop-blur transition hover:bg-white/12"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold px-6 py-3 shadow-lg transition hover:shadow-orange-500/50 hover:scale-105"
               >
+                <i className="fa-solid fa-trophy"></i>
                 Browse Tournaments
+              </Link>
+              <Link
+                href="/players"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-orange-500 dark:border-orange-400 bg-transparent text-orange-600 dark:text-orange-400 font-bold px-6 py-3 transition hover:bg-orange-50 dark:hover:bg-orange-500/10"
+              >
+                <i className="fa-solid fa-people-group"></i>
+                Manage Players
               </Link>
             </div>
           </div>
+        </section>
 
-          <div className="rounded-[2.25rem] border border-white/10 bg-white/[0.07] p-4 shadow-2xl backdrop-blur-xl">
-            <div className="rounded-[1.75rem] bg-[#07160d] p-5">
-              <div className="mb-5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.3em] text-lime-300">Match Pulse</p>
-                  <h2 className="mt-1 text-2xl font-black">Today on Cricksy</h2>
-                </div>
-                <span className="rounded-full bg-red-500 px-3 py-1 text-xs font-black">LIVE</span>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <StatCard icon={Radio} label="Live" value={String(liveCount)} />
-                <StatCard icon={CalendarDays} label="Matches" value={String(matches.length)} />
-                <StatCard icon={BellRing} label="Alerts" value="On" />
-              </div>
-
-              <div className="mt-5 rounded-3xl bg-gradient-to-br from-lime-300 to-emerald-500 p-5 text-emerald-950">
-                <p className="text-sm font-black uppercase tracking-[0.25em]">Cricksy</p>
-                <p className="mt-2 text-3xl font-black leading-tight">{caption}</p>
+        {/* Stats Section */}
+        <section className="mb-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6 shadow-lg dark:shadow-2xl dark:shadow-blue-500/5 transition hover:shadow-2xl dark:hover:shadow-blue-500/20">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-gray-700 dark:text-gray-300 font-semibold">Total Matches</h3>
+              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+                <i className="fa-solid fa-baseball text-blue-600 dark:text-blue-400 text-xl"></i>
               </div>
             </div>
+            <p className="text-3xl font-black text-gray-900 dark:text-white">{matches.length}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Across all tournaments</p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6 shadow-lg dark:shadow-2xl dark:shadow-red-500/5 transition hover:shadow-2xl dark:hover:shadow-red-500/20">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-gray-700 dark:text-gray-300 font-semibold">Live Now</h3>
+              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
+                <i className="fa-solid fa-circle text-red-600 dark:text-red-400 text-xl animate-pulse"></i>
+              </div>
+            </div>
+            <p className="text-3xl font-black text-gray-900 dark:text-white">{liveCount}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Matches in progress</p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6 shadow-lg dark:shadow-2xl dark:shadow-emerald-500/5 transition hover:shadow-2xl dark:hover:shadow-emerald-500/20">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-gray-700 dark:text-gray-300 font-semibold">Tournaments</h3>
+              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
+                <i className="fa-solid fa-trophy text-emerald-600 dark:text-emerald-400 text-xl"></i>
+              </div>
+            </div>
+            <p className="text-3xl font-black text-gray-900 dark:text-white">Active</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Tournament management</p>
           </div>
         </section>
 
-        <section className="grid gap-4 py-6 sm:grid-cols-2 lg:grid-cols-4">
-          <Feature icon={Activity} title="Fast Scores" text="Real-time score updates directly from your API." />
-          <Feature icon={Flame} title="Live Moments" text="Live wickets, overs, and match status updates." />
-          <Feature icon={Shield} title="Tournament Ready" text="Supports your tournament and score routes dynamically." />
-          <Feature icon={Trophy} title="Responsive UI" text="Optimized for mobile, tablet, and desktop devices." />
-        </section>
-
-        <section id="matches" className="pt-8">
-          <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-            <div>
-              <p className="font-black uppercase tracking-[0.3em] text-lime-300">Live Center</p>
-              <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Cricksy Live Matches</h2>
-            </div>
-            <p className="text-sm text-white/50">Scores, venues, status, and scorecards in one place.</p>
+        {/* Matches Section */}
+        <section>
+          <div className="mb-8">
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Latest Matches</h2>
+            <p className="text-gray-600 dark:text-gray-400">Real-time updates from all tournaments</p>
           </div>
+
 
           {loading ? (
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {[1, 2, 3].map((item) => (
-                <div key={item} className="h-72 animate-pulse rounded-[2rem] border border-white/10 bg-white/[0.06]" />
+            <div className="grid gap-6 md:grid-cols-2">
+              {[1, 2, 3, 4].map((item) => (
+                <div
+                  key={item}
+                  className="h-64 animate-pulse rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800"
+                />
               ))}
             </div>
           ) : matches.length === 0 ? (
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-10 text-center">
-              <p className="text-2xl font-black">No matches available</p>
-              <p className="mt-2 text-white/55">Create or schedule matches to see them here.</p>
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 p-12 text-center">
+              <i className="fa-solid fa-inbox text-4xl text-gray-400 dark:text-gray-600 mb-4 block"></i>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">No matches available</p>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">Create tournaments to see matches here.</p>
+              <Link
+                href="/tournaments"
+                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold px-6 py-3"
+              >
+                <i className="fa-solid fa-plus"></i>
+                Create Tournament
+              </Link>
             </div>
           ) : (
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2">
               {matches.map((m) => (
-                <MatchCard
+                <Link
                   key={m._id}
-                  title={`${m.teamA} vs ${m.teamB}`}
-                  match={`${m.venue || "Venue TBD"} • ${m.status || "Upcoming"}`}
-                  teamA={m.teamA}
-                  teamAScore={m.score || "0/0"}
-                  teamB={m.teamB}
-                  teamBScore={m.result || "Yet to bat"}
-                  status={m.result || m.status || "Upcoming"}
                   href={`/tournaments/${m.tournamentId}/matches/${m._id}/score`}
-                />
+                  className="group no-underline"
+                >
+                  <div className="h-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6 shadow-lg dark:shadow-2xl dark:shadow-orange-500/5 transition hover:shadow-2xl dark:hover:shadow-orange-500/20 hover:scale-105 cursor-pointer">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`h-3 w-3 rounded-full ${
+                            String(m.status || "").toLowerCase().includes("live")
+                              ? "bg-red-500 animate-pulse"
+                              : "bg-gray-400"
+                          }`}
+                        />
+                        <span className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                          {m.status || "Upcoming"}
+                        </span>
+                      </div>
+                      <i className="fa-solid fa-arrow-right text-orange-500 dark:text-orange-400 opacity-0 group-hover:opacity-100 transition"></i>
+                    </div>
+
+                    <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
+                      {m.teamA}
+                      <span className="mx-2 text-gray-400 dark:text-gray-600">vs</span>
+                      {m.teamB}
+                    </h3>
+
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      <i className="fa-solid fa-location-dot mr-2"></i>
+                      {m.venue || "Venue TBD"}
+                    </p>
+
+                    <div className="rounded-lg bg-slate-100 dark:bg-slate-700/50 p-4 mb-4">
+                      <p className="text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">Score</p>
+                      <p className="text-xl font-black text-orange-600 dark:text-orange-400">
+                        {m.score || m.result || "Not started"}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold">
+                        <i className="fa-solid fa-baseball mr-1"></i>Match
+                      </span>
+                      {String(m.status || "").toLowerCase().includes("live") && (
+                        <span className="px-3 py-1 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold">
+                          <i className="fa-solid fa-circle mr-1"></i>Live
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
               ))}
             </div>
           )}
         </section>
       </main>
-    </div>
-  );
-}
-
-function MatchCard({
-  title,
-  match,
-  teamA,
-  teamAScore,
-  teamB,
-  teamBScore,
-  status,
-  href,
-}: any) {
-  const isLive = String(status || "").toLowerCase().includes("live");
-
-  return (
-    <div className="group overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.07] shadow-2xl shadow-black/20 backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-lime-300/30 hover:bg-white/[0.1]">
-      <div className="relative border-b border-white/10 bg-gradient-to-r from-white/10 to-transparent px-5 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="mb-2 flex items-center gap-2">
-              <span className={`h-2.5 w-2.5 rounded-full ${isLive ? "bg-red-500" : "bg-lime-300"}`} />
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-white/45">Match</p>
-            </div>
-            <h2 className="text-lg font-black leading-tight text-white">{title}</h2>
-          </div>
-          <Link href={href} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-lime-300 text-emerald-950 transition group-hover:scale-110">
-            <ChevronRight className="h-5 w-5" />
-          </Link>
-        </div>
-      </div>
-
-      <div className="p-5">
-        <p className="mb-5 line-clamp-1 text-sm font-medium text-white/50">{match}</p>
-
-        <div className="space-y-3">
-          <ScoreRow team={teamA} score={teamAScore} active />
-          <ScoreRow team={teamB} score={teamBScore} />
-        </div>
-
-        <div className="mt-5 rounded-2xl border border-lime-300/15 bg-lime-300/10 px-4 py-3">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-lime-300">Status</p>
-          <p className="mt-1 text-sm font-bold text-white">{status}</p>
-        </div>
-
-        <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-          <Link href={href} className="rounded-full bg-white px-4 py-3 text-center font-black text-emerald-950 no-underline transition hover:bg-lime-300">
-            Scorecard
-          </Link>
-          <Link href={href} className="rounded-full border border-white/10 bg-white/8 px-4 py-3 text-center font-bold text-white no-underline transition hover:bg-orange-500 hover:text-white">
-            Live Score
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ScoreRow({ team, score, active }: any) {
-  return (
-    <div className={`flex items-center justify-between rounded-2xl px-4 py-4 ${active ? "bg-emerald-400/15 text-white" : "bg-black/30 text-white/70"}`}>
-      <div className="flex items-center gap-3">
-        <div className={`grid h-10 w-10 place-items-center rounded-xl text-sm font-black ${active ? "bg-lime-300 text-emerald-950" : "bg-white/10 text-white"}`}>
-          {String(team || "T").slice(0, 2).toUpperCase()}
-        </div>
-        <span className="font-black">{team}</span>
-      </div>
-      <span className="font-black text-lime-200">{score}</span>
-    </div>
-  );
-}
-
-function StatCard({ icon: Icon, label, value }: any) {
-  return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-4">
-      <Icon className="h-5 w-5 text-lime-300" />
-      <p className="mt-3 text-2xl font-black">{value}</p>
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">{label}</p>
-    </div>
-  );
-}
-
-function Feature({ icon: Icon, title, text }: any) {
-  return (
-    <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur transition hover:-translate-y-1 hover:bg-white/[0.1]">
-      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-lime-300/15 text-lime-300">
-        <Icon className="h-6 w-6" />
-      </div>
-      <h3 className="mt-5 text-xl font-black">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-white/55">{text}</p>
     </div>
   );
 }

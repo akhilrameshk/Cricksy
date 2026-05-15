@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Link } from "lucide-react";
+import Navbar from "@/app/components/Navbar";
 
 export default function MatchScorePage() {
     const params = useParams();
@@ -402,7 +403,7 @@ export default function MatchScorePage() {
                     >
                         ← Back
                     </button>
-
+<Navbar />
                     <div className="text-center sm:text-right">
                         <h1 className="text-[28px] font-black text-white sm:text-[34px]">
                             Live Score

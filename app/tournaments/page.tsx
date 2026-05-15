@@ -1,9 +1,11 @@
+/* eslint-disable react/jsx-no-undef */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Navbar from "../components/Navbar";
 
 export default function TournamentsPage() {
   const router = useRouter();
@@ -46,6 +48,7 @@ export default function TournamentsPage() {
 
   return (
     <>
+     <Navbar />
       <div className="min-h-screen bg-slate-950 px-4 py-6 text-white sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

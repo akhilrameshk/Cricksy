@@ -6,10 +6,33 @@
   box-sizing: border-box;
 }
 
+:root {
+  color-scheme: dark;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html:not(.dark) {
+  color-scheme: light;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
-  background: #000000;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Dark Mode (Default) */
+html.dark body {
+  background: linear-gradient(to bottom right, #0f172a, #0f172a, #020617);
   color: #ffffff;
+}
+
+/* Light Mode */
+html:not(.dark) body {
+  background: linear-gradient(to bottom right, #f8fafc, #ffffff, #f1f5f9);
+  color: #111827;
 }
