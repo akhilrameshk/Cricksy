@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 export default function TournamentsPage() {
   const router = useRouter();
@@ -348,6 +349,7 @@ export default function TournamentsPage() {
           </div>
         </div>
       )}
+      <Footer />
     </>
   );
 }

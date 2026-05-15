@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 type Match = {
   _id: string;
@@ -198,6 +199,7 @@ export default function HomePage() {
           )}
         </section>
       </main>
+      <Footer />
     </div>
   );
 }
