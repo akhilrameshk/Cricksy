@@ -3,203 +3,328 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-
-type Match = {
-  _id: string;
-  tournamentId: string;
-  teamA: string;
-  teamB: string;
-  venue?: string;
-  status?: string;
-  score?: string;
-  result?: string;
-};
+import AdCard from "./components/AdCard";
 
 export default function HomePage() {
-  const [matches, setMatches] = useState<Match[]>([]);
+  const [liveMatches, setLiveMatches] = useState<any[]>([]);
+  const [localMatches, setLocalMatches] = useState<any[]>([]);
+  const [news, setNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    fetch("/api/live")
+      .then((res) => res.json())
+      .then((res) => setLiveMatches(res.data || []))
+      .catch(() => setLiveMatches([]));
+
     fetch("/api/matches")
       .then((res) => res.json())
-      .then((res) => setMatches(res.data || []))
+      .then((res) => setLocalMatches(res.data || []))
       .finally(() => setLoading(false));
+
+    fetch("/api/news")
+      .then((res) => res.json())
+      .then((res) => setNews(res.articles || []))
+      .catch(() => setNews([]));
   }, []);
 
-  const liveCount = matches.filter((m) =>
-    String(m.status || "").toLowerCase().includes("live")
-  ).length;
+  return (
+    <main className="min-h-screen bg-[#e9eef1] pb-20 text-black dark:bg-slate-950 dark:text-white">
+      <header className="sticky top-0 z-50 bg-[#009270] text-white shadow-md">
+        <div className="mx-auto flex h-14 max-w-md items-center justify-between px-4">
+          <button>
+            <i className="fa-solid fa-bars text-xl" />
+          </button>
+
+          <Link href="/" className="text-2xl font-black italic no-underline">
+            cri<span className="rounded-full bg-white px-1 text-[#009270]">c</span>ksy
+          </Link>
+
+         
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-md">
+        
+        {/* Caution */}
+        <section className="px-2 py-2">
+          <div className="rounded-xl bg-orange-50 p-4 text-xs leading-5 text-slate-800">
+            <div className="mb-2 flex items-center justify-between text-orange-700">
+              <b>
+                <i className="fa-solid fa-circle-exclamation mr-2" />
+                CAUTION
+              </b>
+              <i className="fa-solid fa-xmark text-lg" />
+            </div>
+            Cricksy is not associated with betting or gambling platforms. Enjoy
+            live cricket scores safely on the official Cricksy platform.
+          </div>
+        </section>
+       <AdCard />
+        {/* Live Matches */}
+        <section className="px-2 pt-[5px]">
+  <div className="flex gap-5 overflow-x-auto px-1 pb-3" style={{gap:"20px !important",margin:"10px 20px"}}>
+    {liveMatches.length === 0 ? (
+      <EmptyCard text="No live matches available" />
+    ) : (
+      liveMatches.slice(0, 8).map((match) => (
+        <LiveMatchCard key={match.id} match={match} />
+      ))
+    )}
+  </div>
+</section>
+         <AdCard />
+
+      
+
+
+       {/* Local Matches */}
+<section className="px-2 pt-[5px]">
+  <SectionTitle title="Local Matches" href="/matches" />
+
+  <div
+    className="flex overflow-x-auto pb-3"
+    style={{ gap: "20px", margin: "10px 20px" }}
+  >
+    {loading ? (
+      <EmptyCard text="Loading matches..." />
+    ) : localMatches.length === 0 ? (
+      <EmptyCard text="No local matches found" />
+    ) : (
+      localMatches.slice(0, 8).map((match) => (
+        <LocalMatchCard key={match._id} match={match} />
+      ))
+    )}
+  </div>
+</section>
+ <AdCard />
+{/* News */}
+<section className="px-2 pt-[5px]">
+  <SectionTitle title="Cricket News" href="/news" />
+
+  <div
+    className="flex overflow-x-auto pb-3"
+    style={{ gap: "20px", margin: "10px 20px" }}
+  >
+    {news.length === 0 ? (
+      <EmptyCard text="No news available" />
+    ) : (
+      news.slice(0, 8).map((item, index) => (
+        <NewsCard key={index} item={item} />
+      ))
+    )}
+  </div>
+</section>
+ <AdCard />
+      </div>
+
+      <BottomMenu />
+    </main>
+  );
+}
+
+
+
+function LiveMatchCard({ match }: any) {
+  const teamA =
+    match.teamInfo?.[0]?.shortname ||
+    match.teams?.[0] ||
+    "Team A";
+
+  const teamB =
+    match.teamInfo?.[1]?.shortname ||
+    match.teams?.[1] ||
+    "Team B";
+
+  const scoreA = match.score?.[0]
+    ? `${match.score[0].r}/${match.score[0].w} (${match.score[0].o})`
+    : "-";
+
+  const scoreB = match.score?.[1]
+    ? `${match.score[1].r}/${match.score[1].w} (${match.score[1].o})`
+    : "-";
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-gray-900 dark:text-white transition-colors duration-300">
-      <Navbar />
+    <div className="min-w-[260px] overflow-hidden rounded-[20px] border border-slate-300 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900">
+      {/* Header */}
+      <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+        <div className="flex items-start justify-between gap-2">
+          <p className="line-clamp-2 text-[11px] font-medium leading-4 text-slate-500 dark:text-slate-400">
+            {match.name || "Live Match"}
+          </p>
 
-      <main className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Hero Section */}
-        <section className="mb-16 py-8">
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 p-8 md:p-12 shadow-lg dark:shadow-2xl dark:shadow-orange-500/10">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-orange-100 dark:bg-orange-500/20 px-4 py-2">
-              <i className="fa-solid fa-cricket text-orange-600 dark:text-orange-400"></i>
-              <span className="text-sm font-bold text-orange-600 dark:text-orange-400">Welcome to Tournament Hub</span>
-            </div>
+         
+        </div>
+      </div>
 
-            <h1 className="mb-4 text-4xl md:text-5xl font-black text-gray-900 dark:text-white">
-              Cricket Tournament
-              <span className="ml-3 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">Management</span>
-            </h1>
+      {/* Match Scores */}
+      <div className="space-y-4 px-4 py-4">
+        {/* Team A */}
+        <div className="flex items-center justify-evenly">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-red-500" />
 
-            <p className="mb-8 max-w-2xl text-lg text-gray-600 dark:text-gray-300">
-              Manage tournaments, teams, players, and live scores all in one place. Experience modern cricket tournament management like never before.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                href="/tournaments"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold px-6 py-3 shadow-lg transition hover:shadow-orange-500/50 hover:scale-105"
-              >
-                <i className="fa-solid fa-trophy"></i>
-                Browse Tournaments
-              </Link>
-              <Link
-                href="/players"
-                className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-orange-500 dark:border-orange-400 bg-transparent text-orange-600 dark:text-orange-400 font-bold px-6 py-3 transition hover:bg-orange-50 dark:hover:bg-orange-500/10"
-              >
-                <i className="fa-solid fa-people-group"></i>
-                Manage Players
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="mb-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6 shadow-lg dark:shadow-2xl dark:shadow-blue-500/5 transition hover:shadow-2xl dark:hover:shadow-blue-500/20">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-700 dark:text-gray-300 font-semibold">Total Matches</h3>
-              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
-                <i className="fa-solid fa-baseball text-blue-600 dark:text-blue-400 text-xl"></i>
-              </div>
-            </div>
-            <p className="text-3xl font-black text-gray-900 dark:text-white">{matches.length}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Across all tournaments</p>
+            <span className="text-sm font-bold text-slate-900 dark:text-white">
+              {teamA}
+            </span>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6 shadow-lg dark:shadow-2xl dark:shadow-red-500/5 transition hover:shadow-2xl dark:hover:shadow-red-500/20">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-700 dark:text-gray-300 font-semibold">Live Now</h3>
-              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
-                <i className="fa-solid fa-circle text-red-600 dark:text-red-400 text-xl animate-pulse"></i>
-              </div>
-            </div>
-            <p className="text-3xl font-black text-gray-900 dark:text-white">{liveCount}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Matches in progress</p>
+          <span className="text-sm font-black text-slate-900 dark:text-white">
+            {scoreA}
+          </span>
+        </div>
+
+        {/* Team B */}
+        <div className="flex items-center justify-evenly">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-green-600" />
+
+            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+              {teamB}
+            </span>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6 shadow-lg dark:shadow-2xl dark:shadow-emerald-500/5 transition hover:shadow-2xl dark:hover:shadow-emerald-500/20">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-700 dark:text-gray-300 font-semibold">Tournaments</h3>
-              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-                <i className="fa-solid fa-trophy text-emerald-600 dark:text-emerald-400 text-xl"></i>
-              </div>
-            </div>
-            <p className="text-3xl font-black text-gray-900 dark:text-white">Active</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Tournament management</p>
-          </div>
-        </section>
+          <span className="text-sm font-black text-slate-700 dark:text-slate-300">
+            {scoreB}
+          </span>
+        </div>
 
-        {/* Matches Section */}
-        <section>
-          <div className="mb-8">
-            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Latest Matches</h2>
-            <p className="text-gray-600 dark:text-gray-400">Real-time updates from all tournaments</p>
-          </div>
+        {/* Status */}
+        <div className="rounded-xl bg-slate-100 px-3 py-2 dark:bg-slate-800">
+          <p className="line-clamp-2 text-xs font-semibold leading-5 text-red-600 dark:text-red-400">
+            {match.status || "Match in progress"}
+          </p>
+        </div>
+      </div>
 
+      {/* Footer */}
+      <div className="flex items-center justify-center border-t border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50">
+       
 
-          {loading ? (
-            <div className="grid gap-6 md:grid-cols-2">
-              {[1, 2, 3, 4].map((item) => (
-                <div
-                  key={item}
-                  className="h-64 animate-pulse rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800"
-                />
-              ))}
-            </div>
-          ) : matches.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 p-12 text-center">
-              <i className="fa-solid fa-inbox text-4xl text-gray-400 dark:text-gray-600 mb-4 block"></i>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">No matches available</p>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Create tournaments to see matches here.</p>
-              <Link
-                href="/tournaments"
-                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold px-6 py-3"
-              >
-                <i className="fa-solid fa-plus"></i>
-                Create Tournament
-              </Link>
-            </div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2">
-              {matches.map((m) => (
-                <Link
-                  key={m._id}
-                  href={`/tournaments/${m.tournamentId}/matches/${m._id}/score`}
-                  className="group no-underline"
-                >
-                  <div className="h-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6 shadow-lg dark:shadow-2xl dark:shadow-orange-500/5 transition hover:shadow-2xl dark:hover:shadow-orange-500/20 hover:scale-105 cursor-pointer">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`h-3 w-3 rounded-full ${
-                            String(m.status || "").toLowerCase().includes("live")
-                              ? "bg-red-500 animate-pulse"
-                              : "bg-gray-400"
-                          }`}
-                        />
-                        <span className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400">
-                          {m.status || "Upcoming"}
-                        </span>
-                      </div>
-                      <i className="fa-solid fa-arrow-right text-orange-500 dark:text-orange-400 opacity-0 group-hover:opacity-100 transition"></i>
-                    </div>
-
-                    <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
-                      {m.teamA}
-                      <span className="mx-2 text-gray-400 dark:text-gray-600">vs</span>
-                      {m.teamB}
-                    </h3>
-
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      <i className="fa-solid fa-location-dot mr-2"></i>
-                      {m.venue || "Venue TBD"}
-                    </p>
-
-                    <div className="rounded-lg bg-slate-100 dark:bg-slate-700/50 p-4 mb-4">
-                      <p className="text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">Score</p>
-                      <p className="text-xl font-black text-orange-600 dark:text-orange-400">
-                        {m.score || m.result || "Not started"}
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold">
-                        <i className="fa-solid fa-baseball mr-1"></i>Match
-                      </span>
-                      {String(m.status || "").toLowerCase().includes("live") && (
-                        <span className="px-3 py-1 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold">
-                          <i className="fa-solid fa-circle mr-1"></i>Live
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-      </main>
-      <Footer />
+        <button className="rounded-full bg-[#009270] px-4 py-1.5 text-[10px] font-black uppercase tracking-wide text-white transition hover:bg-[#00795d]">
+          Scorecard
+        </button>
+      </div>
     </div>
+  );
+}
+function SectionTitle({ title, href }: { title: string; href: string }) {
+  return (
+    <div className="mx-5 mb-1 flex items-center justify-between">
+      <h2 className="text-lg font-black">{title}</h2>
+      <Link href={href} className="text-sm font-bold text-[#009270]">
+        View All
+      </Link>
+    </div>
+  );
+}
+function LocalMatchCard({ match }: any) {
+  return (
+    <Link
+      href={`/tournaments/${match.tournamentId}/matches/${match._id}/score`}
+      className="min-w-[260px] overflow-hidden rounded-[20px] border border-slate-300 bg-white p-4 shadow-sm no-underline dark:border-slate-700 dark:bg-slate-900"
+    >
+      <p className="mb-3 line-clamp-1 text-xs text-slate-500">
+        {match.venue || "Venue TBD"} • {match.status || "Upcoming"}
+      </p>
+
+      <div className="flex justify-evenly text-sm">
+        <b>{match.teamA}</b>
+        <b>{match.score || "0/0"}</b>
+      </div>
+
+      <div className="mt-3 flex justify-evenly text-sm text-slate-500">
+        <span>{match.teamB}</span>
+        <span>{match.result || "Yet to bat"}</span>
+      </div>
+      {match?.result && (
+         <div className="mt-3 flex justify-evenly text-sm text-slate-500">
+       
+        <span>{match.result || "Yet to bat"}</span>
+      </div>
+      )}
+      
+    </Link>
+  );
+}
+function NewsCard({ item }: any) {
+  return (
+    <a
+      href={item.url}
+      target="_blank"
+      className="min-w-[260px] overflow-hidden rounded-[20px] border border-slate-300 bg-white shadow-sm no-underline dark:border-slate-700 dark:bg-slate-900"
+    >
+      {item.image && (
+        <img src={item.image} alt={item.title} className="h-32 w-full object-cover" />
+      )}
+
+      <div className="p-4">
+        <h3 className="line-clamp-2 text-sm font-black text-black dark:text-white">
+          {item.title}
+        </h3>
+        <p className="mt-2 line-clamp-2 text-xs text-slate-500">
+          {item.description}
+        </p>
+      </div>
+    </a>
+  );
+}
+function ScoreLine({ team, score, active }: any) {
+  return (
+    <div className="mb-2 flex items-center justify-between text-sm">
+      <div className="flex items-center gap-2">
+        <span
+          className={`h-5 w-5 rounded-sm ${
+            active ? "bg-red-500" : "bg-green-700"
+          }`}
+        />
+        <span className={active ? "font-bold" : "text-slate-500"}>{team}</span>
+      </div>
+      <span className={active ? "font-bold" : "text-slate-500"}>{score}</span>
+    </div>
+  );
+}
+
+function QuickTab({ icon, label }: any) {
+  return (
+    <button className="flex min-w-max items-center gap-2 rounded-md bg-white px-4 py-3 text-sm shadow-sm dark:bg-slate-900">
+      <i className={`fa-solid ${icon}`} />
+      {label}
+    </button>
+  );
+}
+
+function EmptyCard({ text }: { text: string }) {
+  return (
+    <div className="min-w-[295px] rounded-md bg-white p-5 text-center text-sm text-slate-500 shadow-sm dark:bg-slate-900">
+      {text}
+    </div>
+  );
+}
+
+function BottomMenu() {
+  const links = [
+    { href: "/", label: "Home", icon: "fa-house" },
+    { href: "/matches", label: "Matches", icon: "fa-baseball" },
+    { href: "/tournaments", label: "Series", icon: "fa-trophy" },
+    { href: "/scorecards", label: "Scorecards", icon: "fa-clipboard-list" },
+    { href: "/news", label: "News", icon: "fa-newspaper" },
+  ];
+
+  return (
+    <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+      <div className="mx-auto grid h-16 max-w-md grid-cols-5">
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="flex flex-col items-center justify-center text-xs text-slate-600 no-underline dark:text-slate-400"
+          >
+            <i className={`fa-solid ${link.icon} mb-1 text-lg`} />
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    </footer>
   );
 }

@@ -35,15 +35,32 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Ads Section */}
         <div className="py-8 border-b border-slate-200 dark:border-slate-700">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Ad Slot 1 */}
-            <div className="bg-gray-100 dark:bg-slate-800 rounded-lg p-4">
-              <FooterAd />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Ad Banner 1 */}
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white hover:shadow-lg transition">
+              <h4 className="font-bold text-lg mb-2">Premium Membership</h4>
+              <p className="text-sm mb-4">Get exclusive features and advanced analytics</p>
+              <button className="bg-white text-blue-600 px-4 py-2 rounded font-semibold hover:bg-gray-100 transition text-sm">
+                Learn More
+              </button>
             </div>
 
-            {/* Ad Slot 2 */}
-            <div className="bg-gray-100 dark:bg-slate-800 rounded-lg p-4">
-              <FooterAd />
+            {/* Ad Banner 2 */}
+            <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white hover:shadow-lg transition">
+              <h4 className="font-bold text-lg mb-2">Sports Academy</h4>
+              <p className="text-sm mb-4">Join our training programs and improve your game</p>
+              <button className="bg-white text-purple-600 px-4 py-2 rounded font-semibold hover:bg-gray-100 transition text-sm">
+                Sign Up
+              </button>
+            </div>
+
+            {/* Ad Banner 3 */}
+            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white hover:shadow-lg transition">
+              <h4 className="font-bold text-lg mb-2">Sponsor us</h4>
+              <p className="text-sm mb-4">Reach thousands of cricket enthusiasts today</p>
+              <button className="bg-white text-green-600 px-4 py-2 rounded font-semibold hover:bg-gray-100 transition text-sm">
+                Advertise
+              </button>
             </div>
           </div>
         </div>
