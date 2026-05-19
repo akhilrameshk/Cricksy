@@ -44,16 +44,9 @@ export default function HomePage() {
 
       <main className="mx-auto max-w-md pt-14 pb-20">
         <section className="px-2 py-2">
-          <Card sx={{ borderRadius: "14px", bgcolor: "#fff7ed" }}>
+          <Card sx={{ borderRadius: "14px", bgcolor: "#fff7ed", mt: "56px" }}>
             <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                <Typography sx={{ fontSize: 12, fontWeight: 900, color: "#c2410c" }}>
-                  ⚠ CAUTION
-                </Typography>
-                <Typography sx={{ fontSize: 16, color: "#c2410c" }}>
-                  ×
-                </Typography>
-              </Box>
+             
 
               <Typography sx={{ fontSize: 12, lineHeight: 1.7, color: "#1f2937" }}>
                 Cricksy is not associated with betting or gambling platforms.
@@ -140,10 +133,14 @@ function ScrollRow({ children }: { children: React.ReactNode }) {
 
 function LiveMatchCard({ match }: any) {
   const teamA =
-    match.teamInfo?.[0]?.shortname || match.teams?.[0] || "Team A";
+    match.teamInfo?.[0]?.shortname ||
+    match.teams?.[0] ||
+    "Team A";
 
   const teamB =
-    match.teamInfo?.[1]?.shortname || match.teams?.[1] || "Team B";
+    match.teamInfo?.[1]?.shortname ||
+    match.teams?.[1] ||
+    "Team B";
 
   const scoreA = match.score?.[0]
     ? `${match.score[0].r}/${match.score[0].w} (${match.score[0].o})`
@@ -157,34 +154,102 @@ function LiveMatchCard({ match }: any) {
     <Card
       sx={{
         minWidth: 260,
+        maxWidth: 260,
         borderRadius: "20px",
         border: "1px solid #cbd5e1",
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        bgcolor: "#fff",
       }}
     >
-      <Box sx={{ borderBottom: "1px solid #e5e7eb", px: 2, py: 1.5 }}>
-        <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>
+      {/* Match Title */}
+      <Box
+        sx={{
+          borderBottom: "1px solid #e5e7eb",
+          px: 2,
+          py: 1.5,
+          minHeight: 78,
+          display: "flex",
+          alignItems: "flex-start",
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#64748b",
+            lineHeight: 1.5,
+            overflow: "hidden",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+          }}
+        >
           {match.name || "Live Match"}
         </Typography>
       </Box>
 
-      <CardContent sx={{ px: 2, py: 2, "&:last-child": { pb: 2 } }}>
-        <ScoreRow team={teamA} score={scoreA} color="#ef4444" />
-        <ScoreRow team={teamB} score={scoreB} color="#16a34a" />
+      {/* Scores */}
+      <CardContent
+        sx={{
+          px: 2,
+          py: 2,
+          flex: 1,
+          "&:last-child": {
+            pb: 2,
+          },
+        }}
+      >
+        <ScoreRow
+          team={teamA}
+          score={scoreA}
+          color="#ef4444"
+        />
 
-        <Box sx={{ mt: 2, bgcolor: "#f1f5f9", borderRadius: "12px", p: 1 }}>
-          <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#dc2626" }}>
+        <ScoreRow
+          team={teamB}
+          score={scoreB}
+          color="#16a34a"
+        />
+
+        {/* Result */}
+        <Box
+          sx={{
+            bgcolor: "#f1f5f9",
+            borderRadius: "14px",
+            px: 1.5,
+            py: 1.5,
+            minHeight: 86,
+            display: "flex",
+            alignItems: "flex-start",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 13,
+              fontWeight: 800,
+              color: "#dc2626",
+              lineHeight: 1.55,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
             {match.status || "Match in progress"}
           </Typography>
         </Box>
       </CardContent>
 
+      {/* Footer */}
       <Box
         sx={{
           borderTop: "1px solid #e5e7eb",
           bgcolor: "#f8fafc",
-          p: 1.5,
+          p: 1.8,
           display: "flex",
           justifyContent: "center",
         }}
@@ -195,14 +260,17 @@ function LiveMatchCard({ match }: any) {
           sx={{
             bgcolor: "#009270",
             borderRadius: "999px",
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 900,
-            textTransform: "uppercase",
-            px: 2,
-            "&:hover": { bgcolor: "#00795d" },
+            px: 2.5,
+            boxShadow: "none",
+            "&:hover": {
+              bgcolor: "#00795d",
+              boxShadow: "none",
+            },
           }}
         >
-          Scorecard
+          SCORECARD
         </Button>
       </Box>
     </Card>
@@ -219,15 +287,58 @@ function ScoreRow({
   color: string;
 }) {
   return (
-    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: color }} />
-        <Typography sx={{ fontSize: 14, fontWeight: 800, color: "#0f172a" }}>
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "1fr auto",
+        alignItems: "center",
+        columnGap: 1,
+        mb: 2,
+      }}
+    >
+      {/* Team */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          minWidth: 0,
+        }}
+      >
+        <Box
+          sx={{
+            width: 11,
+            height: 11,
+            borderRadius: "50%",
+            bgcolor: color,
+            flexShrink: 0,
+          }}
+        />
+
+        <Typography
+          sx={{
+            fontSize: 16,
+            fontWeight: 900,
+            color: "#0f172a",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
           {team}
         </Typography>
       </Box>
 
-      <Typography sx={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>
+      {/* Score */}
+      <Typography
+        sx={{
+          fontSize: 16,
+          fontWeight: 900,
+          color: "#0f172a",
+          whiteSpace: "nowrap",
+          textAlign: "right",
+        }}
+      >
         {score}
       </Typography>
     </Box>
@@ -257,78 +368,290 @@ function LocalMatchCard({ match }: any) {
       <Card
         sx={{
           minWidth: 260,
+          maxWidth: 260,
           borderRadius: "20px",
           border: "1px solid #cbd5e1",
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-          p: 2,
+          overflow: "hidden",
+          bgcolor: "#fff",
         }}
       >
-        <Typography sx={{ fontSize: 12, color: "#64748b", mb: 1.5 }}>
-          {match.venue || "Venue TBD"} • {match.status || "Upcoming"}
-        </Typography>
-
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
-          <Typography sx={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>
-            {match.teamA}
-          </Typography>
-          <Typography sx={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>
-            {match.score || "0/0"}
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            minHeight: 64,
+            borderBottom: "1px solid #e5e7eb",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: "#64748b",
+              lineHeight: 1.45,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {match.venue || "Venue TBD"} • {match.status || "Upcoming"}
           </Typography>
         </Box>
 
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography sx={{ fontSize: 14, color: "#64748b" }}>
-            {match.teamB}
-          </Typography>
-          <Typography sx={{ fontSize: 14, color: "#64748b" }}>
-            {match.result || "Yet to bat"}
-          </Typography>
-        </Box>
+        <CardContent sx={{ px: 2, py: 2, "&:last-child": { pb: 2 } }}>
+          <LocalScoreRow team={match.teamA} score={match.score || "0/0"} active />
+          <LocalScoreRow
+            team={match.teamB}
+            score={match.result ? "Result" : "Yet to bat"}
+          />
 
-        {match?.result && (
-          <Typography sx={{ mt: 1.5, fontSize: 13, fontWeight: 700, color: "#009270" }}>
-            {match.result}
-          </Typography>
-        )}
+          <Box
+            sx={{
+              mt: 2,
+              bgcolor: "#f1f5f9",
+              borderRadius: "14px",
+              px: 1.5,
+              py: 1.5,
+              minHeight: 72,
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 800,
+                color: match?.result ? "#dc2626" : "#64748b",
+                lineHeight: 1.55,
+                overflow: "hidden",
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+              }}
+            >
+              {match.result || match.status || "Match not started yet"}
+            </Typography>
+          </Box>
+        </CardContent>
+
+        <Box
+          sx={{
+            borderTop: "1px solid #e5e7eb",
+            bgcolor: "#f8fafc",
+            p: 1.5,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            size="small"
+            variant="contained"
+            sx={{
+              bgcolor: "#0d6bde",
+              borderRadius: "999px",
+              fontSize: 11,
+              fontWeight: 900,
+              px: 2.5,
+              boxShadow: "none",
+              "&:hover": {
+                bgcolor: "#0a58b8",
+                boxShadow: "none",
+              },
+            }}
+          >
+            VIEW SCORE
+          </Button>
+        </Box>
       </Card>
     </Link>
   );
 }
 
+function LocalScoreRow({
+  team,
+  score,
+  active,
+}: {
+  team: string;
+  score: string;
+  active?: boolean;
+}) {
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "1fr auto",
+        alignItems: "center",
+        columnGap: 1,
+        mb: 1.5,
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+        <Box
+          sx={{
+            width: 10,
+            height: 10,
+            borderRadius: "50%",
+            bgcolor: active ? "#ef4444" : "#16a34a",
+            flexShrink: 0,
+          }}
+        />
+
+        <Typography
+          sx={{
+            fontSize: 15,
+            fontWeight: 900,
+            color: active ? "#0f172a" : "#334155",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {team}
+        </Typography>
+      </Box>
+
+      <Typography
+        sx={{
+          fontSize: 15,
+          fontWeight: 900,
+          color: active ? "#0f172a" : "#334155",
+          whiteSpace: "nowrap",
+          textAlign: "right",
+        }}
+      >
+        {score}
+      </Typography>
+    </Box>
+  );
+}
+
 function NewsCard({ item }: any) {
   return (
-    <a href={item.url} target="_blank" className="no-underline">
+    <a href={item.url} target="_blank" rel="noreferrer" className="no-underline">
       <Card
         sx={{
           minWidth: 260,
+          maxWidth: 260,
+          height: 310,
           borderRadius: "20px",
           border: "1px solid #cbd5e1",
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           overflow: "hidden",
+          bgcolor: "#fff",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        {item.image && (
-          <Box
-            component="img"
-            src={item.image}
-            alt={item.title}
-            sx={{
-              width: "100%",
-              height: 130,
-              objectFit: "cover",
-            }}
-          />
-        )}
+        <Box
+          sx={{
+            width: "100%",
+            height: 130,
+            bgcolor: "#e2e8f0",
+            overflow: "hidden",
+          }}
+        >
+          {item.image ? (
+            <Box
+              component="img"
+              src={item.image}
+              alt={item.title}
+              sx={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                height: "100%",
+                display: "grid",
+                placeItems: "center",
+                bgcolor: "#eff6ff",
+                color: "#0d6bde",
+                fontWeight: 900,
+                fontSize: 14,
+              }}
+            >
+              CRICKSY NEWS
+            </Box>
+          )}
+        </Box>
 
-        <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-          <Typography sx={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>
+        <CardContent
+          sx={{
+            px: 2,
+            py: 2,
+            flex: 1,
+            "&:last-child": { pb: 2 },
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 14,
+              fontWeight: 900,
+              color: "#0f172a",
+              lineHeight: 1.45,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              minHeight: 61,
+            }}
+          >
             {item.title}
           </Typography>
 
-          <Typography sx={{ mt: 1, fontSize: 12, color: "#64748b" }}>
-            {item.description}
+          <Typography
+            sx={{
+              mt: 1,
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#64748b",
+              lineHeight: 1.5,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              minHeight: 54,
+            }}
+          >
+            {item.description || "Latest cricket news and updates from Cricksy."}
           </Typography>
         </CardContent>
+
+        <Box
+          sx={{
+            borderTop: "1px solid #e5e7eb",
+            bgcolor: "#f8fafc",
+            px: 2,
+            py: 1.25,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 11,
+              fontWeight: 800,
+              color: "#0d6bde",
+            }}
+          >
+            Cricket News
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 11,
+              fontWeight: 900,
+              color: "#0f172a",
+            }}
+          >
+            Read →
+          </Typography>
+        </Box>
       </Card>
     </a>
   );
