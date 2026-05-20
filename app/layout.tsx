@@ -5,6 +5,11 @@ import { ThemeProvider } from "./providers";
 export const metadata: Metadata = {
   title: "Cricksy",
   description: "Live cricket scores and tournaments",
+   icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

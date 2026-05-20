@@ -1,14 +1,43 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import OpenAI from "openai";
+import Groq from "groq-sdk";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
 });
+
+function hasToss(match: any) {
+  return Boolean(
+    match?.tossWinner ||
+      match?.tossChoice ||
+      match?.toss ||
+      match?.status?.toLowerCase?.().includes("won the toss")
+  );
+}
+
+function hasLineup(match: any) {
+  return Boolean(
+    match?.lineupUpdated ||
+      match?.hasSquad ||
+      match?.playingXI ||
+      match?.teamAPlayingXI ||
+      match?.teamBPlayingXI
+  );
+}
+
+function cleanJson(text: string) {
+  return text.replace(/```json/g, "").replace(/```/g, "").trim();
+}
 
 export async function POST(req: Request) {
   try {
-    const { match, option } = await req.json();
+    const {
+      match,
+      option,
+      recentPerformance,
+      secondBattingTeam,
+      secondBowlingTeam,
+    } = await req.json();
 
     if (!match) {
       return Response.json(
@@ -18,63 +47,146 @@ export async function POST(req: Request) {
     }
 
     const isSecondInnings = option === "second-innings";
+    const tossDone = hasToss(match);
+    const lineupDone = hasLineup(match);
+
+    if (isSecondInnings && (!tossDone || !lineupDone)) {
+      return Response.json(
+        {
+          success: false,
+          locked: true,
+          message:
+            "Second innings fantasy team can be created only after toss and lineup are available.",
+          requirements: {
+            tossDone,
+            lineupDone,
+            secondBattingTeam: Boolean(secondBattingTeam),
+            secondBowlingTeam: Boolean(secondBowlingTeam),
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    if (isSecondInnings && (!secondBattingTeam || !secondBowlingTeam)) {
+      return Response.json(
+        {
+          success: false,
+          locked: true,
+          message:
+            "Please select second batting team and second bowling team before creating second innings team.",
+        },
+        { status: 400 }
+      );
+    }
 
     const prompt = `
-You are an AI fantasy cricket assistant.
+You are a fantasy cricket analyst.
 
-Create ${isSecondInnings ? "3" : "5"} Dream11-style fantasy teams.
+Create fantasy cricket teams.
 
-Important rules:
+Important:
 - Suggestions only. No winning guarantee.
-- Do not promote betting or gambling.
-- Use only the match data provided.
-- If player/squad names are missing, use team roles and clearly say final playing XI is needed.
-- Captain and vice-captain should be different.
-- Prefer balanced combinations.
+- Do not mention betting or gambling.
+- Return valid JSON only.
+- Use recent performance, toss, pitch and lineup data if provided.
 
-Mode:
-${isSecondInnings ? "Second innings 5-minute quick team suggestions" : "Full match Dream11 team suggestions"}
-
-Match data:
+Match:
 ${JSON.stringify(match, null, 2)}
 
-Return ONLY valid JSON:
+Recent performance:
+${JSON.stringify(recentPerformance || {}, null, 2)}
+
+Mode:
+${
+  isSecondInnings
+    ? `
+SECOND INNINGS MODE:
+- Create exactly 3 teams.
+- Each team must have exactly 5 players only.
+- Players must be selected only from:
+  1. Second batting team: ${secondBattingTeam}
+  2. Second bowling team: ${secondBowlingTeam}
+- Use batters/all-rounders from second batting team.
+- Use bowlers/all-rounders from second bowling team.
+- Do not include any other team player.
+`
+    : tossDone && lineupDone
+    ? `
+FULL MATCH FINAL TEAM MODE:
+- Toss and lineup are available.
+- Create exactly 5 updated final teams.
+- Each team must have exactly 11 players.
+- Use actual lineup and recent stats.
+`
+    : `
+FULL MATCH PRE-TOSS MODE:
+- Toss or lineup is not available.
+- Create exactly 5 dummy/pre-toss teams.
+- Each team must have exactly 11 players if possible.
+- Clearly mention this is pre-toss dummy suggestion.
+`
+}
+
+Return JSON only:
 {
   "matchTitle": "",
-  "option": "${isSecondInnings ? "second-innings" : "dream11"}",
-  "disclaimer": "AI fantasy teams are suggestions only. No winning guarantee.",
+  "mode": "${
+    isSecondInnings
+      ? "second-innings"
+      : tossDone && lineupDone
+      ? "final-after-toss"
+      : "pre-toss-dummy"
+  }",
+  "disclaimer": "Fantasy teams are suggestions only. No winning guarantee.",
   "teams": [
     {
-      "teamName": "Safe Team 1",
+      "teamName": "",
       "risk": "Safe",
       "captain": "",
       "viceCaptain": "",
-      "wicketKeeper": [],
-      "batters": [],
-      "allRounders": [],
-      "bowlers": [],
+      "players": [],
       "reason": ""
     }
   ]
 }
 `;
 
-    const response = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: prompt,
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      temperature: isSecondInnings ? 0.4 : 0.6,
     });
 
-    const text = response.output_text || "{}";
+    const text = completion.choices[0]?.message?.content || "{}";
+    const parsed = JSON.parse(cleanJson(text));
+
+    if (isSecondInnings) {
+      parsed.teams = (parsed.teams || []).map((team: any) => ({
+        ...team,
+        players: (team.players || []).slice(0, 5),
+      }));
+    }
+
+    if (!isSecondInnings) {
+      parsed.teams = (parsed.teams || []).map((team: any) => ({
+        ...team,
+        players: (team.players || []).slice(0, 11),
+      }));
+    }
 
     return Response.json({
       success: true,
-      data: JSON.parse(text),
+      provider: "groq",
+      tossDone,
+      lineupDone,
+      data: parsed,
     });
   } catch (error: any) {
     return Response.json(
       {
         success: false,
-        message: error?.message || "Failed to generate fantasy suggestion",
+        message: error?.message || "Failed to generate fantasy teams",
       },
       { status: 500 }
     );
