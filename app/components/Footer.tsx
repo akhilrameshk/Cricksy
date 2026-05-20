@@ -9,7 +9,7 @@ import SportsCricketRoundedIcon from "@mui/icons-material/SportsCricketRounded";
 import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
 import ScoreboardRoundedIcon from "@mui/icons-material/ScoreboardRounded";
 import FeedRoundedIcon from "@mui/icons-material/FeedRounded";
-
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 export default function Footer() {
   const pathname = usePathname();
 
@@ -17,7 +17,7 @@ export default function Footer() {
     { href: "/", label: "Home", icon: <HomeRoundedIcon /> },
     { href: "/matches", label: "Matches", icon: <SportsCricketRoundedIcon /> },
     { href: "/tournaments", label: "Series", icon: <EmojiEventsRoundedIcon /> },
-    { href: "/scorecards", label: "Scores", icon: <ScoreboardRoundedIcon /> },
+    { href: "/fantasy", label: "Fantasy", icon: <AutoAwesomeRoundedIcon /> },
     { href: "/news", label: "News", icon: <FeedRoundedIcon /> },
   ];
 

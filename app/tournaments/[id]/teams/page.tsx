@@ -4,6 +4,28 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  MenuItem,
+  TextField,
+  Typography,
+} from "@mui/material";
+
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import PersonAddRoundedIcon from "@mui/icons-material/PersonAddRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+
+import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
+import AdCard from "@/app/components/AdCard";
 
 export default function Page() {
   const { id } = useParams();
@@ -28,25 +50,22 @@ export default function Page() {
     status: "Bench",
   });
 
-  // LOAD TEAMS
   const loadTeams = async () => {
     const res = await fetch(`/api/teams?tournamentId=${tournamentId}`);
     const data = await res.json();
-    setTeams(data.data);
+    setTeams(data.data || []);
   };
 
-  // LOAD PLAYERS
   const loadPlayers = async (teamId: string) => {
     const res = await fetch(`/api/players?teamId=${teamId}`);
     const data = await res.json();
-    setPlayers(data.data);
+    setPlayers(data.data || []);
   };
 
   useEffect(() => {
     loadTeams();
   }, []);
 
-  // ADD TEAM
   const addTeam = async (e: any) => {
     e.preventDefault();
 
@@ -61,15 +80,13 @@ export default function Page() {
     loadTeams();
   };
 
-  // SELECT TEAM
   const handleSelect = (id: string) => {
     setSelectedTeamId(id);
     const t = teams.find((x) => x._id === id);
-    setSelectedTeamName(t?.teamName);
+    setSelectedTeamName(t?.teamName || "");
     loadPlayers(id);
   };
 
-  // SAVE PLAYER
   const savePlayer = async (e: any) => {
     e.preventDefault();
 
@@ -107,167 +124,275 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-8 text-white sm:px-6 lg:px-10">
-      <div className="mx-auto max-w-7xl">
-        {/* Header with Back Button */}
-        <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => router.push(`/tournaments/${tournamentId}`)}
-              className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 font-semibold text-gray-300 transition hover:bg-slate-700 hover:text-white cursor-pointer"
+    <div className="min-h-dvh bg-[#e9eef1] text-black dark:bg-slate-950 dark:text-white">
+      <Header />
+
+      <main className="mx-auto max-w-md pt-[58px] pb-24 lg:max-w-7xl">
+        <Box
+          sx={{
+            px: 2,
+            pt: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 1,
+          }}
+        >
+          <Button
+            startIcon={<ArrowBackRoundedIcon />}
+            onClick={() => router.push(`/tournaments/${tournamentId}`)}
+            variant="contained"
+            sx={{
+              bgcolor: "#0d6bde",
+              borderRadius: "999px",
+              fontWeight: 900,
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#0a58b8", boxShadow: "none" },
+            }}
+          >
+            Back
+          </Button>
+
+          <Button
+            startIcon={<HomeRoundedIcon />}
+            onClick={() => router.push("/")}
+            variant="contained"
+            sx={{
+              bgcolor: "#16a34a",
+              borderRadius: "999px",
+              fontWeight: 900,
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#15803d", boxShadow: "none" },
+            }}
+          >
+            Home
+          </Button>
+        </Box>
+
+        <Box sx={{ px: 2, pt: 2 }}>
+          <Typography sx={{ fontSize: 30, fontWeight: 950, color: "#0f172a" }}>
+            Teams & Players
+          </Typography>
+
+          <Typography
+            sx={{
+              mt: 0.7,
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#64748b",
+            }}
+          >
+            Manage teams and build your tournament squad.
+          </Typography>
+        </Box>
+
+        <AdCard />
+
+        <Box
+          sx={{
+            px: 2,
+            pt: 2,
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns: {
+              xs: "1fr",
+              lg: "360px 1fr",
+            },
+          }}
+        >
+          <Box sx={{ display: "grid", gap: 2 }}>
+            <CardBox
+              title="Add Team"
+              icon={<AddRoundedIcon />}
+              color="#16a34a"
             >
-              <i className="fa-solid fa-arrow-left"></i>
-              Back
-            </button>
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-                Teams & Players
-              </h1>
-              <p className="mt-1 text-sm text-gray-400">
-                Manage teams and build your squad
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Teams Section */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Add Team Form */}
-            <div className="rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 p-6 shadow-lg">
-              <h2 className="mb-4 text-xl font-bold text-white">
-                <i className="fa-solid fa-plus mr-2 text-orange-400"></i>
-                Add Team
-              </h2>
-
-              <form onSubmit={addTeam} className="space-y-4">
-                <input
-                  placeholder="Team Name"
+              <Box component="form" onSubmit={addTeam} sx={{ display: "grid", gap: 2 }}>
+                <TextField
+                  label="Team Name"
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
-                  className="input"
                   required
+                  fullWidth
                 />
-                <input
-                  placeholder="Captain Name"
+
+                <TextField
+                  label="Captain Name"
                   value={captain}
                   onChange={(e) => setCaptain(e.target.value)}
-                  className="input"
                   required
+                  fullWidth
                 />
-                <button
+
+                <Button
                   type="submit"
-                  className="w-full rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 font-semibold text-white shadow-lg transition hover:shadow-orange-500/50 hover:shadow-xl cursor-pointer"
+                  variant="contained"
+                  startIcon={<AddRoundedIcon />}
+                  sx={{
+                    height: 46,
+                    bgcolor: "#0d6bde",
+                    borderRadius: "16px",
+                    fontWeight: 900,
+                    textTransform: "none",
+                    boxShadow: "none",
+                    "&:hover": { bgcolor: "#0a58b8", boxShadow: "none" },
+                  }}
                 >
-                  <i className="fa-solid fa-plus mr-2"></i>
                   Add Team
-                </button>
-              </form>
-            </div>
+                </Button>
+              </Box>
+            </CardBox>
 
-            {/* Select Team */}
-            <div className="rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 p-6 shadow-lg">
-              <h2 className="mb-4 text-xl font-bold text-white">
-                <i className="fa-solid fa-people-group mr-2 text-emerald-400"></i>
-                Select Team
-              </h2>
-
-              <select
-                onChange={(e) => handleSelect(e.target.value)}
+            <CardBox
+              title="Select Team"
+              icon={<GroupsRoundedIcon />}
+              color="#0d6bde"
+            >
+              <TextField
+                select
+                label="Choose a team"
                 value={selectedTeamId}
-                className="input"
+                onChange={(e) => handleSelect(e.target.value)}
+                fullWidth
               >
-                <option value="">Choose a team...</option>
+                <MenuItem value="">Choose a team...</MenuItem>
                 {teams.map((t) => (
-                  <option key={t._id} value={t._id}>
+                  <MenuItem key={t._id} value={t._id}>
                     {t.teamName} {t.captain && `(${t.captain})`}
-                  </option>
+                  </MenuItem>
                 ))}
-              </select>
+              </TextField>
 
               {teams.length === 0 && (
-                <p className="mt-4 text-center text-gray-400">No teams yet. Create one above!</p>
+                <Typography
+                  sx={{
+                    mt: 2,
+                    textAlign: "center",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "#64748b",
+                  }}
+                >
+                  No teams yet. Create one above.
+                </Typography>
               )}
-            </div>
-          </div>
+            </CardBox>
+          </Box>
 
-          {/* Players Section */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Add/Edit Player Form - Always show when team selected */}
+          <Box sx={{ display: "grid", gap: 2 }}>
             {selectedTeamId && (
-              <div className="rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 p-6 shadow-lg">
-                <h2 className="mb-4 text-xl font-bold text-white">
-                  <i className={`fa-solid mr-2 ${player._id ? "fa-user-pen" : "fa-user-plus"} text-blue-400`}></i>
-                  {player._id ? "Edit Player" : "Add Player"} - {selectedTeamName}
-                </h2>
-
-                <form onSubmit={savePlayer} className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <input
-                      placeholder="Player Name"
-                      value={player.name}
-                      onChange={(e) => setPlayer({ ...player, name: e.target.value })}
-                      className="input"
-                      required
-                    />
-                    <select
-                      value={player.role}
-                      onChange={(e) => setPlayer({ ...player, role: e.target.value })}
-                      className="input"
-                      required
-                    >
-                      <option value="">Select Role</option>
-                      <option value="Batsman">Batsman</option>
-                      <option value="Bowler">Bowler</option>
-                      <option value="All-rounder">All-rounder</option>
-                      <option value="Wicket-keeper">Wicket-keeper</option>
-                    </select>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <select
-                      value={player.battingStyle}
-                      onChange={(e) => setPlayer({ ...player, battingStyle: e.target.value })}
-                      className="input"
-                    >
-                      <option value="">Batting Style</option>
-                      <option value="Right">Right Handed</option>
-                      <option value="Left">Left Handed</option>
-                    </select>
-                    <select
-                      value={player.bowlingStyle}
-                      onChange={(e) => setPlayer({ ...player, bowlingStyle: e.target.value })}
-                      className="input"
-                    >
-                      <option value="">Bowling Style</option>
-                      <option value="Fast">Fast</option>
-                      <option value="Spin">Spin</option>
-                      <option value="Medium">Medium</option>
-                    </select>
-                  </div>
-
-                  <select
-                    value={player.status}
-                    onChange={(e) => setPlayer({ ...player, status: e.target.value })}
-                    className="input"
+              <CardBox
+                title={`${player._id ? "Edit Player" : "Add Player"} - ${selectedTeamName}`}
+                icon={player._id ? <EditRoundedIcon /> : <PersonAddRoundedIcon />}
+                color="#7c3aed"
+              >
+                <Box component="form" onSubmit={savePlayer} sx={{ display: "grid", gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gap: 2,
+                      gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                    }}
                   >
-                    <option value="Playing">Playing</option>
-                    <option value="Bench">Bench</option>
-                    <option value="Injured">Injured</option>
-                  </select>
+                    <TextField
+                      label="Player Name"
+                      value={player.name}
+                      onChange={(e) =>
+                        setPlayer({ ...player, name: e.target.value })
+                      }
+                      required
+                      fullWidth
+                    />
 
-                  <div className="flex gap-3">
-                    <button
-                      type="submit"
-                      className="flex-1 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3 font-semibold text-white shadow-lg transition hover:shadow-emerald-500/50 hover:shadow-xl cursor-pointer"
+                    <TextField
+                      select
+                      label="Role"
+                      value={player.role}
+                      onChange={(e) =>
+                        setPlayer({ ...player, role: e.target.value })
+                      }
+                      required
+                      fullWidth
                     >
-                      <i className={`fa-solid mr-2 ${player._id ? "fa-save" : "fa-plus"}`}></i>
+                      <MenuItem value="">Select Role</MenuItem>
+                      <MenuItem value="Batsman">Batsman</MenuItem>
+                      <MenuItem value="Bowler">Bowler</MenuItem>
+                      <MenuItem value="All-rounder">All-rounder</MenuItem>
+                      <MenuItem value="Wicket-keeper">Wicket-keeper</MenuItem>
+                    </TextField>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gap: 2,
+                      gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                    }}
+                  >
+                    <TextField
+                      select
+                      label="Batting Style"
+                      value={player.battingStyle}
+                      onChange={(e) =>
+                        setPlayer({ ...player, battingStyle: e.target.value })
+                      }
+                      fullWidth
+                    >
+                      <MenuItem value="">Batting Style</MenuItem>
+                      <MenuItem value="Right">Right Handed</MenuItem>
+                      <MenuItem value="Left">Left Handed</MenuItem>
+                    </TextField>
+
+                    <TextField
+                      select
+                      label="Bowling Style"
+                      value={player.bowlingStyle}
+                      onChange={(e) =>
+                        setPlayer({ ...player, bowlingStyle: e.target.value })
+                      }
+                      fullWidth
+                    >
+                      <MenuItem value="">Bowling Style</MenuItem>
+                      <MenuItem value="Fast">Fast</MenuItem>
+                      <MenuItem value="Spin">Spin</MenuItem>
+                      <MenuItem value="Medium">Medium</MenuItem>
+                    </TextField>
+                  </Box>
+
+                  <TextField
+                    select
+                    label="Status"
+                    value={player.status}
+                    onChange={(e) =>
+                      setPlayer({ ...player, status: e.target.value })
+                    }
+                    fullWidth
+                  >
+                    <MenuItem value="Playing">Playing</MenuItem>
+                    <MenuItem value="Bench">Bench</MenuItem>
+                    <MenuItem value="Injured">Injured</MenuItem>
+                  </TextField>
+
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      sx={{
+                        flex: 1,
+                        height: 46,
+                        bgcolor: "#16a34a",
+                        borderRadius: "16px",
+                        fontWeight: 900,
+                        textTransform: "none",
+                        boxShadow: "none",
+                        "&:hover": { bgcolor: "#15803d", boxShadow: "none" },
+                      }}
+                    >
                       {player._id ? "Update Player" : "Add Player"}
-                    </button>
+                    </Button>
+
                     {player._id && (
-                      <button
-                        type="button"
+                      <Button
                         onClick={() =>
                           setPlayer({
                             _id: "",
@@ -278,90 +403,226 @@ export default function Page() {
                             status: "Bench",
                           })
                         }
-                        className="rounded-lg bg-slate-700 px-4 py-3 font-semibold text-gray-300 transition hover:bg-slate-600 cursor-pointer"
+                        variant="contained"
+                        sx={{
+                          minWidth: 46,
+                          bgcolor: "#64748b",
+                          borderRadius: "16px",
+                          boxShadow: "none",
+                        }}
                       >
-                        <i className="fa-solid fa-times"></i>
-                      </button>
+                        <CloseRoundedIcon />
+                      </Button>
                     )}
-                  </div>
-                </form>
-              </div>
+                  </Box>
+                </Box>
+              </CardBox>
             )}
 
-            {/* Players List */}
-            {selectedTeamId && (
-              <div className="rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 p-6 shadow-lg">
-                <h2 className="mb-4 text-xl font-bold text-white">
-                  <i className="fa-solid fa-users mr-2 text-blue-400"></i>
-                  Squad ({players.length})
-                </h2>
-
+            {selectedTeamId ? (
+              <CardBox
+                title={`Squad (${players.length})`}
+                icon={<GroupsRoundedIcon />}
+                color="#f97316"
+              >
                 {players.length === 0 ? (
-                  <p className="text-center text-gray-400 py-8">No players added yet. Add one above!</p>
+                  <Typography
+                    sx={{
+                      py: 4,
+                      textAlign: "center",
+                      color: "#64748b",
+                      fontWeight: 800,
+                    }}
+                  >
+                    No players added yet. Add one above.
+                  </Typography>
                 ) : (
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gap: 1.5,
+                      gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                    }}
+                  >
                     {players.map((p) => (
-                      <div
-                        key={p._id}
-                        className="rounded-lg border border-slate-600 bg-slate-700/30 p-4 transition hover:border-orange-500/50 hover:bg-slate-700/50 cursor-pointer"
-                        onClick={() => setPlayer(p)}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <p className="font-bold text-white">{p.name}</p>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              <span className="inline-block rounded-full bg-blue-500/20 px-2 py-1 text-xs text-blue-400">
-                                {p.role}
-                              </span>
-                              <span
-                                className={`inline-block rounded-full px-2 py-1 text-xs ${
-                                  p.status === "Playing"
-                                    ? "bg-green-500/20 text-green-400"
-                                    : p.status === "Bench"
-                                      ? "bg-yellow-500/20 text-yellow-400"
-                                      : "bg-red-500/20 text-red-400"
-                                }`}
-                              >
-                                {p.status}
-                              </span>
-                            </div>
-                            {(p.battingStyle || p.bowlingStyle) && (
-                              <p className="mt-2 text-xs text-gray-400">
-                                {p.battingStyle && `Batting: ${p.battingStyle}`}
-                                {p.battingStyle && p.bowlingStyle && " • "}
-                                {p.bowlingStyle && `Bowling: ${p.bowlingStyle}`}
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPlayer(p);
-                            }}
-                            className="rounded-lg bg-orange-500/20 px-3 py-2 text-xs font-semibold text-orange-400 transition hover:bg-orange-500/40 cursor-pointer hover:scale-110 duration-200"
-                            title="Edit player"
-                          >
-                            <i className="fa-solid fa-edit"></i>
-                          </button>
-                        </div>
-                      </div>
+                      <PlayerCard key={p._id} player={p} setPlayer={setPlayer} />
                     ))}
-                  </div>
+                  </Box>
                 )}
-              </div>
-            )}
+              </CardBox>
+            ) : (
+              <Card
+                sx={{
+                  borderRadius: "24px",
+                  border: "1px solid #cbd5e1",
+                  p: 5,
+                  textAlign: "center",
+                  boxShadow: "0 4px 16px rgba(15,23,42,0.08)",
+                }}
+              >
+                <GroupsRoundedIcon sx={{ fontSize: 64, color: "#94a3b8" }} />
 
-            {!selectedTeamId && (
-              <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-12 text-center backdrop-blur">
-                <div className="mb-4 text-5xl">👥</div>
-                <h3 className="mb-2 text-xl font-bold text-white">Select a Team</h3>
-                <p className="text-gray-400">Choose a team from the left panel to manage players</p>
-              </div>
+                <Typography sx={{ mt: 2, fontSize: 22, fontWeight: 950 }}>
+                  Select a Team
+                </Typography>
+
+                <Typography sx={{ mt: 1, color: "#64748b", fontWeight: 600 }}>
+                  Choose a team from the left panel to manage players.
+                </Typography>
+              </Card>
             )}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+
+        <AdCard />
+      </main>
+
+      <Footer />
     </div>
+  );
+}
+
+function CardBox({
+  title,
+  icon,
+  color,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  color: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card
+      sx={{
+        borderRadius: "24px",
+        overflow: "hidden",
+        border: "1px solid #cbd5e1",
+        boxShadow: "0 4px 16px rgba(15,23,42,0.08)",
+        bgcolor: "#fff",
+      }}
+    >
+      <Box
+        sx={{
+          bgcolor: color,
+          color: "#fff",
+          px: 2,
+          py: 1.5,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        {icon}
+
+        <Typography sx={{ fontSize: 18, fontWeight: 950 }}>{title}</Typography>
+      </Box>
+
+      <CardContent sx={{ p: 2 }}>{children}</CardContent>
+    </Card>
+  );
+}
+
+function PlayerCard({ player, setPlayer }: any) {
+  const statusColor =
+    player.status === "Playing"
+      ? "#16a34a"
+      : player.status === "Bench"
+      ? "#f59e0b"
+      : "#dc2626";
+
+  return (
+    <Card
+      onClick={() => setPlayer(player)}
+      sx={{
+        borderRadius: "18px",
+        border: "1px solid #e2e8f0",
+        cursor: "pointer",
+        transition: "0.2s ease",
+        "&:hover": {
+          transform: "translateY(-2px)",
+          boxShadow: "0 8px 22px rgba(13,107,222,0.14)",
+        },
+      }}
+    >
+      <CardContent sx={{ p: 1.8, "&:last-child": { pb: 1.8 } }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1 }}>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              sx={{
+                fontSize: 15,
+                fontWeight: 950,
+                color: "#0f172a",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {player.name}
+            </Typography>
+
+            <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 0.7 }}>
+              <Chip
+                label={player.role || "Player"}
+                size="small"
+                sx={{
+                  bgcolor: "#eff6ff",
+                  color: "#0d6bde",
+                  fontWeight: 900,
+                }}
+              />
+
+              <Chip
+                label={player.status}
+                size="small"
+                sx={{
+                  bgcolor: `${statusColor}22`,
+                  color: statusColor,
+                  fontWeight: 900,
+                }}
+              />
+            </Box>
+
+            {(player.battingStyle || player.bowlingStyle) && (
+              <Typography
+                sx={{
+                  mt: 1,
+                  fontSize: 12,
+                  color: "#64748b",
+                  fontWeight: 700,
+                }}
+              >
+                {player.battingStyle && `Batting: ${player.battingStyle}`}
+                {player.battingStyle && player.bowlingStyle && " • "}
+                {player.bowlingStyle && `Bowling: ${player.bowlingStyle}`}
+              </Typography>
+            )}
+          </Box>
+
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              setPlayer(player);
+            }}
+            variant="contained"
+            sx={{
+              minWidth: 36,
+              width: 36,
+              height: 36,
+              borderRadius: "12px",
+              bgcolor: "#f97316",
+              boxShadow: "none",
+              "&:hover": {
+                bgcolor: "#ea580c",
+                boxShadow: "none",
+              },
+            }}
+          >
+            <EditRoundedIcon sx={{ fontSize: 18 }} />
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }

@@ -3,7 +3,9 @@ import path from "path";
 
 const CACHE_FILE = path.join(process.cwd(), "cache-live.json");
 
-const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+//const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+const TWO_MINUTES = 60 * 60 * 1000;
+//const FIFTEEN_MINUTES = 15 * 60 * 1000;
 
 export async function GET() {
   try {
@@ -12,7 +14,7 @@ export async function GET() {
       const cached = JSON.parse(fs.readFileSync(CACHE_FILE, "utf-8"));
 
       const isValid =
-        Date.now() - cached.timestamp < TWELVE_HOURS;
+        Date.now() - cached.timestamp < TWO_MINUTES;
 
       // return cached data
       if (isValid) {

@@ -27,7 +27,7 @@ export default function HomePage() {
       .then((res) => setLiveMatches(res.data || []))
       .catch(() => setLiveMatches([]));
 
-    fetch("/api/matches")
+    fetch("/api/home-matches")
       .then((res) => res.json())
       .then((res) => setLocalMatches(res.data || []))
       .finally(() => setLoading(false));
@@ -222,11 +222,39 @@ function LiveMatchCard({ match }: any) {
             borderRadius: "14px",
             px: 1.5,
             py: 1.5,
+            minHeight: 10,
+            display: "flex",
+            alignItems: "flex-start",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: "#64748b",
+              lineHeight: 1.55,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {match?.date ? new Date(match.date).toLocaleString() : "Date TBD"} •{" "}
+          </Typography> 
+       
+        </Box>
+         <Box
+          sx={{
+            bgcolor: "#f1f5f9",
+            borderRadius: "14px",
+            px: 1.5,
+            py: 1.5,
             minHeight: 86,
             display: "flex",
             alignItems: "flex-start",
           }}
         >
+         
           <Typography
             sx={{
               fontSize: 13,
@@ -253,8 +281,11 @@ function LiveMatchCard({ match }: any) {
           display: "flex",
           justifyContent: "center",
         }}
-      >
-        <Button
+      ><Link
+  href={`/scorecards/${match.id}`}
+  className="no-underline"
+>
+ <Button
           size="small"
           variant="contained"
           sx={{
@@ -272,6 +303,8 @@ function LiveMatchCard({ match }: any) {
         >
           SCORECARD
         </Button>
+</Link>
+       
       </Box>
     </Card>
   );
@@ -360,6 +393,9 @@ function SectionTitle({ title, href }: { title: string; href: string }) {
 }
 
 function LocalMatchCard({ match }: any) {
+  const teamAScore = `${match.teamAScore || "0/0"} (${match.teamAOvers || "0.0"})`;
+  const teamBScore = `${match.teamBScore || "0/0"} (${match.teamBOvers || "0.0"})`;
+
   return (
     <Link
       href={`/tournaments/${match.tournamentId}/matches/${match._id}/score`}
@@ -374,26 +410,42 @@ function LocalMatchCard({ match }: any) {
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           overflow: "hidden",
           bgcolor: "#fff",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <Box
           sx={{
             px: 2,
             py: 1.5,
-            minHeight: 64,
+            minHeight: 72,
             borderBottom: "1px solid #e5e7eb",
           }}
         >
           <Typography
             sx={{
               fontSize: 13,
-              fontWeight: 700,
-              color: "#64748b",
+              fontWeight: 800,
+              color: "#0f172a",
               lineHeight: 1.45,
               overflow: "hidden",
               display: "-webkit-box",
-              WebkitLineClamp: 3,
+              WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
+            }}
+          >
+            {match.teamA} vs {match.teamB}
+          </Typography>
+
+          <Typography
+            sx={{
+              mt: 0.5,
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#64748b",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
             }}
           >
             {match.venue || "Venue TBD"} • {match.status || "Upcoming"}
@@ -401,27 +453,36 @@ function LocalMatchCard({ match }: any) {
         </Box>
 
         <CardContent sx={{ px: 2, py: 2, "&:last-child": { pb: 2 } }}>
-          <LocalScoreRow team={match.teamA} score={match.score || "0/0"} active />
+          <LocalScoreRow
+            team={match.teamA}
+            score={teamAScore}
+            color="#ef4444"
+            active={match.result?.includes(match.teamA)}
+          />
+
           <LocalScoreRow
             team={match.teamB}
-            score={match.result ? "Result" : "Yet to bat"}
+            score={teamBScore}
+            color="#16a34a"
+            active={match.result?.includes(match.teamB)}
           />
 
           <Box
             sx={{
               mt: 2,
-              bgcolor: "#f1f5f9",
+              bgcolor: match.result ? "#eff6ff" : "#f1f5f9",
               borderRadius: "14px",
               px: 1.5,
               py: 1.5,
               minHeight: 72,
+              border: match.result ? "1px solid #bfdbfe" : "none",
             }}
           >
             <Typography
               sx={{
                 fontSize: 13,
-                fontWeight: 800,
-                color: match?.result ? "#dc2626" : "#64748b",
+                fontWeight: 900,
+                color: match.result ? "#0d6bde" : "#64748b",
                 lineHeight: 1.55,
                 overflow: "hidden",
                 display: "-webkit-box",
@@ -470,10 +531,12 @@ function LocalMatchCard({ match }: any) {
 function LocalScoreRow({
   team,
   score,
+  color,
   active,
 }: {
   team: string;
   score: string;
+  color: string;
   active?: boolean;
 }) {
   return (
@@ -484,6 +547,10 @@ function LocalScoreRow({
         alignItems: "center",
         columnGap: 1,
         mb: 1.5,
+        borderRadius: "12px",
+        px: 1,
+        py: 0.75,
+        bgcolor: active ? "rgba(13,107,222,0.08)" : "transparent",
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
@@ -492,7 +559,7 @@ function LocalScoreRow({
             width: 10,
             height: 10,
             borderRadius: "50%",
-            bgcolor: active ? "#ef4444" : "#16a34a",
+            bgcolor: color,
             flexShrink: 0,
           }}
         />
@@ -501,7 +568,7 @@ function LocalScoreRow({
           sx={{
             fontSize: 15,
             fontWeight: 900,
-            color: active ? "#0f172a" : "#334155",
+            color: active ? "#0d6bde" : "#0f172a",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -513,9 +580,9 @@ function LocalScoreRow({
 
       <Typography
         sx={{
-          fontSize: 15,
+          fontSize: 14,
           fontWeight: 900,
-          color: active ? "#0f172a" : "#334155",
+          color: active ? "#0d6bde" : "#334155",
           whiteSpace: "nowrap",
           textAlign: "right",
         }}
@@ -526,9 +593,13 @@ function LocalScoreRow({
   );
 }
 
+
 function NewsCard({ item }: any) {
   return (
-    <a href={item.url} target="_blank" rel="noreferrer" className="no-underline">
+    <Link
+      href={`/news/${encodeURIComponent(item.title)}`}
+      className="no-underline"
+    >
       <Card
         sx={{
           minWidth: 260,
@@ -543,24 +614,13 @@ function NewsCard({ item }: any) {
           flexDirection: "column",
         }}
       >
-        <Box
-          sx={{
-            width: "100%",
-            height: 130,
-            bgcolor: "#e2e8f0",
-            overflow: "hidden",
-          }}
-        >
+        <Box sx={{ width: "100%", height: 130, bgcolor: "#e2e8f0" }}>
           {item.image ? (
             <Box
               component="img"
               src={item.image}
               alt={item.title}
-              sx={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
+              sx={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
             <Box
@@ -571,7 +631,6 @@ function NewsCard({ item }: any) {
                 bgcolor: "#eff6ff",
                 color: "#0d6bde",
                 fontWeight: 900,
-                fontSize: 14,
               }}
             >
               CRICKSY NEWS
@@ -579,14 +638,7 @@ function NewsCard({ item }: any) {
           )}
         </Box>
 
-        <CardContent
-          sx={{
-            px: 2,
-            py: 2,
-            flex: 1,
-            "&:last-child": { pb: 2 },
-          }}
-        >
+        <CardContent sx={{ px: 2, py: 2, flex: 1 }}>
           <Typography
             sx={{
               fontSize: 14,
@@ -597,7 +649,6 @@ function NewsCard({ item }: any) {
               display: "-webkit-box",
               WebkitLineClamp: 3,
               WebkitBoxOrient: "vertical",
-              minHeight: 61,
             }}
           >
             {item.title}
@@ -607,14 +658,12 @@ function NewsCard({ item }: any) {
             sx={{
               mt: 1,
               fontSize: 12,
-              fontWeight: 500,
               color: "#64748b",
               lineHeight: 1.5,
               overflow: "hidden",
               display: "-webkit-box",
               WebkitLineClamp: 3,
               WebkitBoxOrient: "vertical",
-              minHeight: 54,
             }}
           >
             {item.description || "Latest cricket news and updates from Cricksy."}
@@ -629,31 +678,18 @@ function NewsCard({ item }: any) {
             py: 1.25,
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
           }}
         >
-          <Typography
-            sx={{
-              fontSize: 11,
-              fontWeight: 800,
-              color: "#0d6bde",
-            }}
-          >
+          <Typography sx={{ fontSize: 11, fontWeight: 800, color: "#0d6bde" }}>
             Cricket News
           </Typography>
 
-          <Typography
-            sx={{
-              fontSize: 11,
-              fontWeight: 900,
-              color: "#0f172a",
-            }}
-          >
+          <Typography sx={{ fontSize: 11, fontWeight: 900, color: "#0f172a" }}>
             Read →
           </Typography>
         </Box>
       </Card>
-    </a>
+    </Link>
   );
 }
 

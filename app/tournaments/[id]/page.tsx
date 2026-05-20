@@ -1,37 +1,39 @@
-"use client";
-
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import Navbar from "@/app/components/Navbar";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Chip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Typography,
+} from "@mui/material";
 
-const Chip = ({ label, type = "default" }: any) => {
-  const styles: any = {
-    default: "bg-white/5 text-white border-white/10",
-    live: "bg-red-500/15 text-white border-red-400/20",
-    upcoming: "bg-amber-500/15 text-white border-amber-400/20",
-    completed: "bg-emerald-500/15 text-white border-emerald-400/20",
-    over: "bg-sky-500/15 text-white border-sky-400/20",
-  };
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import SportsCricketRoundedIcon from "@mui/icons-material/SportsCricketRounded";
+import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold ${
-        styles[type] || styles.default
-      }`}
-    >
-      {label}
-    </span>
-  );
-};
+import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
+import AdCard from "@/app/components/AdCard";
 
-const getStatusType = (status: string) => {
-  if (status === "Live") return "live";
-  if (status === "Completed") return "completed";
-  return "upcoming";
+const getStatusColor = (status: string) => {
+  if (status === "Live") return "#dc2626";
+  if (status === "Completed") return "#16a34a";
+  return "#f59e0b";
 };
 
 export default function TournamentDetailsPage() {
@@ -59,9 +61,7 @@ export default function TournamentDetailsPage() {
 
   const loadTeams = async () => {
     const res = await fetch(`/api/teams?tournamentId=${tournamentId}`);
-    console.log("Teams response:", res);
     const data = await res.json();
-    console.log("Teams data:", data?.data);
     setTeams(data.data || []);
   };
 
@@ -82,7 +82,7 @@ export default function TournamentDetailsPage() {
     setSelectedMatch(match);
     setViewOnlyLineup(viewOnly);
     setLineupModal(true);
-console.log(match,"")
+
     const teamA = teams.find(
       (t) =>
         t.teamName?.trim().toLowerCase() === match.teamA?.trim().toLowerCase()
@@ -173,302 +173,354 @@ console.log(match,"")
     }
   };
 
-  const renderPlayerRow = (
-    player: any,
-    selected: string[],
-    setSelected: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
-    const checked = selected.includes(player._id);
-
-    return (
-      <div
-        key={player._id}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: 10,
-          borderBottom: "1px solid #1e293b",
-          background: checked ? "#064e3b" : "transparent",
-          borderRadius: 8,
-          marginBottom: 6,
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 700, color: "white" }}>{player.name}</div>
-          <div style={{ fontSize: 12, color: "white" }}>
-            {player.role || "-"}
-          </div>
-        </div>
-
-        <input
-          type="checkbox"
-          disabled={viewOnlyLineup}
-          checked={checked}
-          onChange={() => togglePlayer(player._id, selected, setSelected)}
-        />
-      </div>
-    );
-  };
-
   return (
-    <>
-      <div className="min-h-screen bg-slate-950 px-4 py-6 text-white sm:px-6 lg:px-10">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <Link
-                href="/tournaments"
-                className="text-sm font-bold text-orange-400 no-underline hover:text-orange-300"
-              >
-                ← Back to Tournaments
-              </Link>
-<Navbar />
-              <h1 className="mt-3 text-3xl font-black text-white sm:text-5xl">
-                Match List
-              </h1>
+    <div className="min-h-dvh bg-[#e9eef1] text-black dark:bg-slate-950 dark:text-white">
+      <Header />
 
-              <p className="mt-3 max-w-xl text-sm leading-6 text-white sm:text-base">
-                View matches, update lineup, add score and manage match status.
-              </p>
-            </div>
-
-            <Link
-              href={`/tournaments/${tournamentId}/matches/add`}
-              className="rounded-lg bg-orange-500 px-5 py-3 text-center text-sm font-bold text-white no-underline hover:bg-orange-600"
-            >
-              + Add Match
-            </Link>
-          </div>
-
-          {matches.length === 0 ? (
-            <div className="rounded-xl border border-slate-700 bg-slate-900 p-10 text-center">
-              <h2 className="text-2xl font-bold text-white">
-                No matches added yet
-              </h2>
-
-              <Link
-                href={`/tournaments/${tournamentId}/matches/add`}
-                className="mt-5 inline-block rounded-lg bg-orange-500 px-5 py-3 text-sm font-bold text-white no-underline hover:bg-orange-600"
-              >
-                + Add Match
-              </Link>
-            </div>
-          ) : (
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {matches.map((m) => (
-                <div
-                  key={m._id}
-                  className="rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-lg"
-                >
-                  <div className="mb-4 flex items-center justify-between gap-3">
-                    <Chip
-                      label={m.status || "Upcoming"}
-                      type={getStatusType(m.status)}
-                    />
-                    <Chip label={`${m.overs || "0.0"} overs`} type="over" />
-                  </div>
-
-                  <h2 className="text-center text-[24px] font-bold text-white">
-                    {m.teamA} vs {m.teamB}
-                  </h2>
-
-                  <p className="mt-3 text-center text-sm text-white">
-                    📍 {m.venue || "Venue not added"}
-                  </p>
-
-                  <div className="mt-5 rounded-xl bg-slate-950 p-4 text-center">
-                    <p className="text-xs font-bold uppercase text-white">
-                      Current Score
-                    </p>
-
-                    <p className="mt-2 text-4xl font-black text-orange-400">
-                      {m.score || "0/0"}
-                    </p>
-                  </div>
-
-                  <p className="mt-4 text-center text-sm text-white">
-                    {m.result || "Match not completed"}
-                  </p>
-
-                  <div className="mt-5 grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openLineupModal(m, Boolean(m.lineupUpdated))
-                      }
-                      className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${
-                        m.lineupUpdated
-                          ? "bg-blue-600 hover:bg-blue-700"
-                          : "bg-emerald-600 hover:bg-emerald-700"
-                      }`}
-                    >
-                      {m.lineupUpdated ? "View Lineup" : "Update Lineup"}
-                    </button>
-
-                    <Link
-                      href={`/tournaments/${tournamentId}/matches/${m._id}/score`}
-                      className="rounded-md bg-orange-500 px-3 py-2 text-center text-sm font-semibold text-white no-underline hover:bg-orange-600"
-                    >
-                      Add Score →
-                    </Link>
-                  </div>
-
-                  <div className="mt-3 text-center text-xs text-white">
-                    {m.lineupUpdated ? "Lineup updated ✅" : "Lineup pending"}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {lineupModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 999999,
-            background: "rgba(0,0,0,0.9)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 16,
-            color: "white",
-          }}
-        >
-          <div
-            style={{
-              background: "#0f172a",
-              borderRadius: 16,
-              padding: 20,
-              width: "100%",
-              maxWidth: 1100,
-              maxHeight: "90vh",
-              overflowY: "auto",
-              border: "1px solid #334155",
+      <main className="mx-auto max-w-md pt-[58px] pb-24 lg:max-w-6xl">
+        <Box sx={{ px: 2, pt: 2, display: "flex", justifyContent: "space-between", gap: 1 }}>
+          <Button
+            component={Link}
+            href="/"
+            startIcon={<HomeRoundedIcon />}
+            variant="contained"
+            sx={{
+              bgcolor: "#0d6bde",
+              borderRadius: "999px",
+              fontWeight: 900,
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#0a58b8", boxShadow: "none" },
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 20,
-                gap: 10,
+            Home
+          </Button>
+
+          <Button
+            component={Link}
+            href={`/tournaments/${tournamentId}/matches/add`}
+            startIcon={<AddRoundedIcon />}
+            variant="contained"
+            sx={{
+              bgcolor: "#16a34a",
+              borderRadius: "999px",
+              fontWeight: 900,
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#15803d", boxShadow: "none" },
+            }}
+          >
+            Add
+          </Button>
+        </Box>
+
+        <Box sx={{ px: 2, pt: 2 }}>
+          <Typography sx={{ fontSize: 30, fontWeight: 950, color: "#0f172a" }}>
+            Match List
+          </Typography>
+          <Typography sx={{ mt: 0.7, fontSize: 14, fontWeight: 600, color: "#64748b" }}>
+            View matches, update lineup, add score and manage match status.
+          </Typography>
+        </Box>
+
+        <AdCard />
+
+        {matches.length === 0 ? (
+          <Card sx={{ m: 2, p: 4, borderRadius: "28px", textAlign: "center" }}>
+            <SportsCricketRoundedIcon sx={{ fontSize: 56, color: "#94a3b8" }} />
+            <Typography sx={{ mt: 2, fontSize: 22, fontWeight: 950 }}>
+              No matches added yet
+            </Typography>
+            <Button
+              component={Link}
+              href={`/tournaments/${tournamentId}/matches/add`}
+              variant="contained"
+              sx={{
+                mt: 3,
+                bgcolor: "#0d6bde",
+                borderRadius: "999px",
+                fontWeight: 900,
+                textTransform: "none",
               }}
             >
-              <div>
-                <h2 style={{ fontSize: 24, fontWeight: "bold" }}>
-                  {viewOnlyLineup ? "Selected Playing 11" : "Update Playing 11"}
-                </h2>
-                <p style={{ fontSize: 14 }}>
-                  {selectedMatch?.teamA} vs {selectedMatch?.teamB}
-                </p>
-              </div>
+              Add Match
+            </Button>
+          </Card>
+        ) : (
+          <Box
+            sx={{
+              px: 2,
+              pt: 2,
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr", xl: "1fr 1fr 1fr" },
+            }}
+          >
+            {matches.map((m, index) => (
+              <Box key={m._id}>
+                <MatchCard
+                  match={m}
+                  tournamentId={tournamentId}
+                  openLineupModal={openLineupModal}
+                />
 
-              <button
-                type="button"
-                onClick={closeLineupModal}
-                style={{
-                  background: "red",
-                  padding: "8px 14px",
-                  borderRadius: 8,
-                  fontWeight: "bold",
-                  color: "white",
-                }}
-              >
-                Close
-              </button>
-            </div>
+                {(index + 1) % 4 === 0 && <AdCard />}
+              </Box>
+            ))}
+          </Box>
+        )}
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                gap: 20,
+        {matches.length > 0 && <AdCard />}
+      </main>
+
+      <Footer />
+<Dialog
+  open={lineupModal}
+  onClose={closeLineupModal}
+  fullWidth
+  maxWidth="md"
+  slotProps={{
+    paper: {
+      sx: {
+        borderRadius: "24px",
+        bgcolor: "#f8fafc",
+      },
+    },
+  }}
+>
+        <DialogTitle
+          sx={{
+            bgcolor: "#0d6bde",
+            color: "#fff",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <Box>
+            <Typography sx={{ fontSize: 20, fontWeight: 950 }}>
+              {viewOnlyLineup ? "Selected Playing 11" : "Update Playing 11"}
+            </Typography>
+            <Typography sx={{ fontSize: 13, opacity: 0.9 }}>
+              {selectedMatch?.teamA} vs {selectedMatch?.teamB}
+            </Typography>
+          </Box>
+
+          <IconButton onClick={closeLineupModal} sx={{ color: "#fff" }}>
+            <CloseRoundedIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 2 }}>
+          <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" } }}>
+            <PlayersBox
+              title={selectedMatch?.teamA}
+              players={teamAPlayers}
+              selected={teamAPlayingXI}
+              setSelected={setTeamAPlayingXI}
+              togglePlayer={togglePlayer}
+              viewOnlyLineup={viewOnlyLineup}
+            />
+
+            <PlayersBox
+              title={selectedMatch?.teamB}
+              players={teamBPlayers}
+              selected={teamBPlayingXI}
+              setSelected={setTeamBPlayingXI}
+              togglePlayer={togglePlayer}
+              viewOnlyLineup={viewOnlyLineup}
+            />
+          </Box>
+
+          {!viewOnlyLineup && (
+            <Button
+              fullWidth
+              onClick={saveLineup}
+              disabled={teamAPlayingXI.length !== 11 || teamBPlayingXI.length !== 11}
+              variant="contained"
+              sx={{
+                mt: 2,
+                height: 48,
+                borderRadius: "16px",
+                bgcolor: "#0d6bde",
+                fontWeight: 900,
+                textTransform: "none",
+                boxShadow: "none",
+                "&:hover": { bgcolor: "#0a58b8", boxShadow: "none" },
               }}
             >
-              <div
-                style={{
-                  background: "#020617",
-                  padding: 15,
-                  borderRadius: 10,
+              Save Playing 11
+            </Button>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function MatchCard({ match, tournamentId, openLineupModal }: any) {
+  const statusColor = getStatusColor(match.status);
+
+  return (
+    <Card
+      sx={{
+        borderRadius: "24px",
+        overflow: "hidden",
+        border: "1px solid #cbd5e1",
+        boxShadow: "0 4px 16px rgba(15,23,42,0.08)",
+        bgcolor: "#fff",
+      }}
+    >
+      <Box sx={{ bgcolor: "#0d6bde", color: "#fff", p: 2 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1 }}>
+          <Chip
+            label={match.status || "Upcoming"}
+            size="small"
+            sx={{ bgcolor: statusColor, color: "#fff", fontWeight: 900 }}
+          />
+          <Chip
+            label={`${match.overs || "0.0"} overs`}
+            size="small"
+            sx={{ bgcolor: "rgba(255,255,255,0.18)", color: "#fff", fontWeight: 900 }}
+          />
+        </Box>
+
+        <Typography sx={{ mt: 2, fontSize: 21, fontWeight: 950, textAlign: "center" }}>
+          {match.teamA} vs {match.teamB}
+        </Typography>
+      </Box>
+
+      <CardContent sx={{ p: 2 }}>
+        <Box
+          sx={{
+            borderRadius: "18px",
+            bgcolor: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            p: 1.5,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+            <LocationOnRoundedIcon sx={{ fontSize: 17, color: "#64748b" }} />
+            <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#64748b" }}>
+              {match.venue || "Venue not added"}
+            </Typography>
+          </Box>
+
+          <Typography sx={{ mt: 1.5, fontSize: 32, fontWeight: 950, color: "#0d6bde", textAlign: "center" }}>
+            {match.score || "0/0"}
+          </Typography>
+
+          <Typography sx={{ mt: 1, fontSize: 13, fontWeight: 800, color: match.result ? "#16a34a" : "#64748b", textAlign: "center" }}>
+            {match.result || "Match not completed"}
+          </Typography>
+        </Box>
+
+        <Box sx={{ mt: 2, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
+          <Button
+            onClick={() => openLineupModal(match, Boolean(match.lineupUpdated))}
+            variant="contained"
+            sx={{
+              bgcolor: match.lineupUpdated ? "#0d6bde" : "#16a34a",
+              borderRadius: "14px",
+              fontWeight: 900,
+              textTransform: "none",
+              boxShadow: "none",
+            }}
+          >
+            {match.lineupUpdated ? "Lineup" : "Update XI"}
+          </Button>
+
+          <Button
+            component={Link}
+            href={`/tournaments/${tournamentId}/matches/${match._id}/score`}
+            variant="contained"
+            sx={{
+              bgcolor: "#f97316",
+              borderRadius: "14px",
+              fontWeight: 900,
+              textTransform: "none",
+              boxShadow: "none",
+            }}
+          >
+            Score
+          </Button>
+        </Box>
+
+        <Box sx={{ mt: 1.5, textAlign: "center" }}>
+          <Chip
+            icon={<GroupsRoundedIcon />}
+            label={match.lineupUpdated ? "Lineup updated" : "Lineup pending"}
+            size="small"
+            sx={{
+              bgcolor: match.lineupUpdated ? "#dcfce7" : "#fffbeb",
+              color: match.lineupUpdated ? "#166534" : "#92400e",
+              fontWeight: 800,
+            }}
+          />
+        </Box>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PlayersBox({
+  title,
+  players,
+  selected,
+  setSelected,
+  togglePlayer,
+  viewOnlyLineup,
+}: any) {
+  return (
+    <Card sx={{ borderRadius: "20px", border: "1px solid #cbd5e1" }}>
+      <Box sx={{ bgcolor: "#f8fafc", p: 2, borderBottom: "1px solid #e2e8f0" }}>
+        <Typography sx={{ fontSize: 18, fontWeight: 950 }}>{title}</Typography>
+        <Typography sx={{ fontSize: 12, fontWeight: 800, color: "#64748b" }}>
+          Selected: {selected.length}/11
+        </Typography>
+      </Box>
+
+      <CardContent sx={{ p: 1.5 }}>
+        {players.length === 0 ? (
+          <Typography sx={{ p: 2, color: "#64748b", fontWeight: 800 }}>
+            No players found
+          </Typography>
+        ) : (
+          players.map((player: any) => {
+            const checked = selected.includes(player._id);
+
+            return (
+              <Box
+                key={player._id}
+                onClick={() => togglePlayer(player._id, selected, setSelected)}
+                sx={{
+                  mb: 1,
+                  p: 1.25,
+                  borderRadius: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  cursor: viewOnlyLineup ? "default" : "pointer",
+                  bgcolor: checked ? "#eff6ff" : "#fff",
+                  border: checked ? "1px solid #0d6bde" : "1px solid #e2e8f0",
                 }}
               >
-                <h3 style={{ fontSize: 18, fontWeight: "bold" }}>
-                  {selectedMatch?.teamA}
-                </h3>
+                <Box>
+                  <Typography sx={{ fontSize: 14, fontWeight: 900 }}>
+                    {player.name}
+                  </Typography>
+                  <Typography sx={{ fontSize: 12, color: "#64748b" }}>
+                    {player.role || "-"}
+                  </Typography>
+                </Box>
 
-                <p style={{ fontSize: 12, marginBottom: 10 }}>
-                  Selected: {teamAPlayingXI.length}/11
-                </p>
-
-                {teamAPlayers.length === 0 ? (
-                  <p>No players found</p>
-                ) : (
-                  teamAPlayers.map((player) =>
-                    renderPlayerRow(player, teamAPlayingXI, setTeamAPlayingXI)
-                  )
-                )}
-              </div>
-
-              <div
-                style={{
-                  background: "#020617",
-                  padding: 15,
-                  borderRadius: 10,
-                }}
-              >
-                <h3 style={{ fontSize: 18, fontWeight: "bold" }}>
-                  {selectedMatch?.teamB}
-                </h3>
-
-                <p style={{ fontSize: 12, marginBottom: 10 }}>
-                  Selected: {teamBPlayingXI.length}/11
-                </p>
-
-                {teamBPlayers.length === 0 ? (
-                  <p>No players found</p>
-                ) : (
-                  teamBPlayers.map((player) =>
-                    renderPlayerRow(player, teamBPlayingXI, setTeamBPlayingXI)
-                  )
-                )}
-              </div>
-            </div>
-
-            {!viewOnlyLineup && (
-              <button
-                type="button"
-                onClick={saveLineup}
-                disabled={
-                  teamAPlayingXI.length !== 11 || teamBPlayingXI.length !== 11
-                }
-                style={{
-                  marginTop: 20,
-                  width: "100%",
-                  background:
-                    teamAPlayingXI.length === 11 && teamBPlayingXI.length === 11
-                      ? "#f97316"
-                      : "#64748b",
-                  padding: 12,
-                  borderRadius: 10,
-                  fontWeight: "bold",
-                  color: "white",
-                  cursor:
-                    teamAPlayingXI.length === 11 && teamBPlayingXI.length === 11
-                      ? "pointer"
-                      : "not-allowed",
-                }}
-              >
-                Save Playing 11
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </>
+                <Checkbox checked={checked} disabled={viewOnlyLineup} />
+              </Box>
+            );
+          })
+        )}
+      </CardContent>
+    </Card>
   );
 }

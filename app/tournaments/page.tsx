@@ -5,11 +5,35 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Navbar from "../components/Navbar";
+
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Typography,
+} from "@mui/material";
+
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import SportsCricketRoundedIcon from "@mui/icons-material/SportsCricketRounded";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
+import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
+
+import Header from "../components/Header";
 import Footer from "../components/Footer";
+import AdCard from "../components/AdCard";
 
 export default function TournamentsPage() {
   const router = useRouter();
+
   const [data, setData] = useState<any[]>([]);
   const [statsOpen, setStatsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"batting" | "bowling">("batting");
@@ -48,308 +72,477 @@ export default function TournamentsPage() {
   };
 
   return (
-    <>
-     <Navbar />
-      <div className="min-h-screen bg-slate-950 px-4 py-6 text-white sm:px-6 lg:px-10">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-[28px] font-bold text-white">Tournaments</h1>
-              <p className="mt-1 text-sm text-white">
-                Manage tournaments, teams and matches
-              </p>
-            </div>
+    <div className="min-h-dvh bg-[#e9eef1] text-black dark:bg-slate-950 dark:text-white">
+      <Header />
 
-            <Link
-              href="/tournaments/add"
-              className="rounded-lg bg-orange-500 px-5 py-2.5 text-center text-sm font-semibold text-white no-underline transition hover:bg-orange-600"
-            >
-              + Add Tournament
-            </Link>
-          </div>
-
-          {data.length === 0 ? (
-            <div className="rounded-xl border border-slate-700 bg-slate-900 p-10 text-center">
-              <h2 className="text-xl font-bold text-white">
-                No tournaments found
-              </h2>
-
-              <Link
-                href="/tournaments/add"
-                className="mt-4 inline-block rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-orange-600"
-              >
-                Add Tournament
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-6 md:grid-cols-4 xl:grid-cols-6">
-              {data.map((t) => (
-                <div
-                  key={t._id}
-                  className="flex h-full flex-col items-center rounded-xl border border-slate-700 bg-slate-900 p-5 text-center shadow-md transition hover:border-orange-500 hover:bg-slate-800"
-                >
-                  <h2 className="line-clamp-2 text-[24px] font-bold leading-tight text-white">
-                    {t.name}
-                  </h2>
-
-                  <div className="mt-3 flex items-center justify-center gap-2 text-[14px] font-normal text-white">
-                    <i className="fa-solid fa-location-dot text-red-500"></i>
-                    <span>{t.venue || "Venue not added"}</span>
-                  </div>
-
-                  <div className="mt-4 rounded bg-orange-500 px-3 py-1 text-[13px] font-semibold text-white">
-                    {t.format || "T20"}
-                  </div>
-
-                  <div className="mt-4 text-[14px] font-normal text-white">
-                    {t.startDate
-                      ? new Date(t.startDate).toLocaleDateString()
-                      : "TBD"}{" "}
-                    -{" "}
-                    {t.endDate
-                      ? new Date(t.endDate).toLocaleDateString()
-                      : "TBD"}
-                  </div>
-
-                  <div className="mt-5 grid w-full grid-cols-1 gap-2">
-                    <div className="grid grid-cols-3 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/tournaments/${t._id}/teams`)}
-                        className="flex items-center justify-center gap-1 rounded-lg bg-emerald-600/20 px-2 py-2 text-center text-xs font-semibold text-emerald-400 transition duration-300 ease-in-out hover:bg-emerald-600/40 hover:scale-105 hover:shadow-lg hover:shadow-emerald-500/50 cursor-pointer"
-                      >
-                        <i className="fa-solid fa-people-group"></i>
-                        Team
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/tournaments/${t._id}`)}
-                        className="flex items-center justify-center gap-1 rounded-lg bg-orange-600/20 px-2 py-2 text-center text-xs font-semibold text-orange-400 transition duration-300 ease-in-out hover:bg-orange-600/40 hover:scale-105 hover:shadow-lg hover:shadow-orange-500/50 cursor-pointer"
-                      >
-                        <i className="fa-solid fa-cricket"></i>
-                        Matches
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => openStatsModal(t)}
-                        className="flex items-center justify-center gap-1 rounded-lg bg-blue-600/20 px-2 py-2 text-xs font-semibold text-blue-400 transition duration-300 ease-in-out hover:bg-blue-600/40 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50 cursor-pointer"
-                      >
-                        <i className="fa-solid fa-chart-bar"></i>
-                        Stats
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {statsOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 999999,
-            background: "rgba(0,0,0,0.85)",
+      <main className="mx-auto max-w-md pt-[58px] pb-24 lg:max-w-7xl">
+        <Box
+          sx={{
+            px: 2,
+            pt: 2,
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 16,
+            justifyContent: "space-between",
+            gap: 1,
           }}
         >
-          <div
-            style={{
-              width: "100%",
-              maxWidth: 1000,
-              maxHeight: "90vh",
-              overflowY: "auto",
-              background: "#0f172a",
-              border: "1px solid #334155",
-              borderRadius: 16,
-              padding: 20,
-              color: "white",
+          <Button
+            component={Link}
+            href="/"
+            startIcon={<HomeRoundedIcon />}
+            variant="contained"
+            sx={{
+              bgcolor: "#0d6bde",
+              borderRadius: "999px",
+              fontWeight: 900,
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#0a58b8", boxShadow: "none" },
             }}
           >
-            <div className="mb-5 flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  Player Stats
-                </h2>
-                <p className="text-sm text-white">
-                  {selectedTournament?.name}
-                </p>
-              </div>
+            Home
+          </Button>
 
-              <button
-                type="button"
-                onClick={closeStatsModal}
-                className="rounded-md bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
-              >
-                Close
-              </button>
-            </div>
+          <Button
+            component={Link}
+            href="/tournaments/add"
+            startIcon={<AddRoundedIcon />}
+            variant="contained"
+            sx={{
+              bgcolor: "#16a34a",
+              borderRadius: "999px",
+              fontWeight: 900,
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#15803d", boxShadow: "none" },
+            }}
+          >
+            Add
+          </Button>
+        </Box>
 
-            <div className="mb-5 flex gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveTab("batting")}
-                className={`rounded-full px-5 py-2 font-bold ${
-                  activeTab === "batting"
-                    ? "bg-emerald-600 text-white"
-                    : "bg-white text-black"
-                }`}
-              >
-                Batsman
-              </button>
+        <Box sx={{ px: 2, pt: 2 }}>
+          <Typography sx={{ fontSize: 32, fontWeight: 950, color: "#0f172a" }}>
+            Tournaments
+          </Typography>
 
-              <button
-                type="button"
-                onClick={() => setActiveTab("bowling")}
-                className={`rounded-full px-5 py-2 font-bold ${
-                  activeTab === "bowling"
-                    ? "bg-emerald-600 text-white"
-                    : "bg-white text-black"
-                }`}
-              >
-                Bowler
-              </button>
-            </div>
+          <Typography
+            sx={{
+              mt: 0.5,
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#64748b",
+            }}
+          >
+            Manage tournaments, teams, matches and player stats.
+          </Typography>
+        </Box>
 
-            {loadingStats ? (
-              <div className="rounded-xl bg-slate-900 p-8 text-center text-white">
-                Loading stats...
-              </div>
-            ) : activeTab === "batting" ? (
-              <div className="overflow-hidden rounded-xl bg-white text-black">
-                <div className="bg-emerald-700 px-4 py-3 font-bold text-white">
-                  Top 10 Batsmen
-                </div>
+        <AdCard />
 
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[750px] text-sm">
-                    <thead className="bg-gray-200 text-gray-800">
-                      <tr>
-                        <th className="px-3 py-3 text-left">#</th>
-                        <th className="px-3 py-3 text-left">Name</th>
-                        <th className="px-3 py-3 text-left">Team</th>
-                        <th className="px-3 py-3 text-center">Matches</th>
-                        <th className="px-3 py-3 text-center">Total Runs</th>
-                        <th className="px-3 py-3 text-center">Average</th>
-                        <th className="px-3 py-3 text-center">Strike Rate</th>
-                      </tr>
-                    </thead>
+        {data.length === 0 ? (
+          <Card
+            sx={{
+              m: 2,
+              p: 5,
+              borderRadius: "28px",
+              textAlign: "center",
+              border: "1px solid #cbd5e1",
+            }}
+          >
+            <EmojiEventsRoundedIcon sx={{ fontSize: 60, color: "#94a3b8" }} />
 
-                    <tbody>
-                      {stats.batsmen.length === 0 ? (
-                        <tr>
-                          <td colSpan={7} className="px-3 py-6 text-center">
-                            No batting stats found
-                          </td>
-                        </tr>
-                      ) : (
-                        stats.batsmen.map((p: any, index: number) => (
-                          <tr
-                            key={`${p.team}-${p.name}`}
-                            className="border-b border-gray-200"
-                          >
-                            <td className="px-3 py-3 font-bold">
-                              {index + 1}
-                            </td>
-                            <td className="px-3 py-3 font-semibold text-blue-600">
-                              {p.name}
-                            </td>
-                            <td className="px-3 py-3">{p.team}</td>
-                            <td className="px-3 py-3 text-center">
-                              {p.matches}
-                            </td>
-                            <td className="px-3 py-3 text-center font-bold">
-                              {p.totalRuns}
-                            </td>
-                            <td className="px-3 py-3 text-center">
-                              {p.average}
-                            </td>
-                            <td className="px-3 py-3 text-center">
-                              {p.strikeRate}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ) : (
-              <div className="overflow-hidden rounded-xl bg-white text-black">
-                <div className="bg-emerald-700 px-4 py-3 font-bold text-white">
-                  Top 10 Bowlers
-                </div>
+            <Typography sx={{ mt: 2, fontSize: 24, fontWeight: 950 }}>
+              No tournaments found
+            </Typography>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[800px] text-sm">
-                    <thead className="bg-gray-200 text-gray-800">
-                      <tr>
-                        <th className="px-3 py-3 text-left">#</th>
-                        <th className="px-3 py-3 text-left">Name</th>
-                        <th className="px-3 py-3 text-left">Team</th>
-                        <th className="px-3 py-3 text-center">Matches</th>
-                        <th className="px-3 py-3 text-center">Overs</th>
-                        <th className="px-3 py-3 text-center">Wickets</th>
-                        <th className="px-3 py-3 text-center">Economy</th>
-                        <th className="px-3 py-3 text-center">Strike Rate</th>
-                      </tr>
-                    </thead>
+            <Typography sx={{ mt: 1, fontSize: 14, color: "#64748b" }}>
+              Create your first tournament to get started.
+            </Typography>
 
-                    <tbody>
-                      {stats.bowlers.length === 0 ? (
-                        <tr>
-                          <td colSpan={8} className="px-3 py-6 text-center">
-                            No bowling stats found
-                          </td>
-                        </tr>
-                      ) : (
-                        stats.bowlers.map((p: any, index: number) => (
-                          <tr
-                            key={`${p.team}-${p.name}-${index}`}
-                            className="border-b border-gray-200"
-                          >
-                            <td className="px-3 py-3 font-bold">
-                              {index + 1}
-                            </td>
-                            <td className="px-3 py-3 font-semibold text-blue-600">
-                              {p.name}
-                            </td>
-                            <td className="px-3 py-3">{p.team}</td>
-                            <td className="px-3 py-3 text-center">
-                              {p.matches}
-                            </td>
-                            <td className="px-3 py-3 text-center">
-                              {p.overs}
-                            </td>
-                            <td className="px-3 py-3 text-center font-bold">
-                              {p.wickets}
-                            </td>
-                            <td className="px-3 py-3 text-center">
-                              {p.economy}
-                            </td>
-                            <td className="px-3 py-3 text-center">
-                              {p.strikeRate}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+            <Button
+              component={Link}
+              href="/tournaments/add"
+              variant="contained"
+              sx={{
+                mt: 3,
+                bgcolor: "#0d6bde",
+                borderRadius: "999px",
+                fontWeight: 900,
+                textTransform: "none",
+                boxShadow: "none",
+                "&:hover": { bgcolor: "#0a58b8", boxShadow: "none" },
+              }}
+            >
+              Add Tournament
+            </Button>
+          </Card>
+        ) : (
+          <Box
+            sx={{
+              px: 2,
+              pt: 2,
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "1fr 1fr",
+                lg: "1fr 1fr 1fr",
+                xl: "1fr 1fr 1fr 1fr",
+              },
+            }}
+          >
+            {data.map((t: any, index: number) => (
+              <Box key={t._id}>
+                <Card
+                  sx={{
+                    borderRadius: "24px",
+                    overflow: "hidden",
+                    border: "1px solid #cbd5e1",
+                    boxShadow: "0 4px 18px rgba(15,23,42,0.08)",
+                    bgcolor: "#fff",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      bgcolor: "#0d6bde",
+                      color: "#fff",
+                      p: 2,
+                      textAlign: "center",
+                    }}
+                  >
+                    <EmojiEventsRoundedIcon sx={{ fontSize: 34 }} />
+
+                    <Typography
+                      sx={{
+                        mt: 1,
+                        fontSize: 22,
+                        fontWeight: 950,
+                        lineHeight: 1.2,
+                        minHeight: 54,
+                      }}
+                    >
+                      {t.name}
+                    </Typography>
+
+                    <Box
+                      sx={{
+                        mt: 1.5,
+                        display: "inline-flex",
+                        borderRadius: "999px",
+                        bgcolor: "rgba(255,255,255,0.18)",
+                        px: 1.5,
+                        py: 0.5,
+                        fontSize: 11,
+                        fontWeight: 900,
+                      }}
+                    >
+                      {t.format || "T20"}
+                    </Box>
+                  </Box>
+
+                  <CardContent sx={{ p: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        bgcolor: "#f8fafc",
+                        borderRadius: "14px",
+                        p: 1.3,
+                      }}
+                    >
+                      <LocationOnRoundedIcon
+                        sx={{ fontSize: 18, color: "#64748b" }}
+                      />
+
+                      <Typography
+                        sx={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: "#334155",
+                        }}
+                      >
+                        {t.venue || "Venue not added"}
+                      </Typography>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        mt: 1.5,
+                        borderRadius: "14px",
+                        bgcolor: "#eff6ff",
+                        border: "1px solid #bfdbfe",
+                        p: 1.4,
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: 12,
+                          fontWeight: 800,
+                          color: "#0d6bde",
+                        }}
+                      >
+                        Tournament Duration
+                      </Typography>
+
+                      <Typography
+                        sx={{
+                          mt: 0.5,
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: "#334155",
+                        }}
+                      >
+                        {t.startDate
+                          ? new Date(t.startDate).toLocaleDateString()
+                          : "TBD"}{" "}
+                        →{" "}
+                        {t.endDate
+                          ? new Date(t.endDate).toLocaleDateString()
+                          : "TBD"}
+                      </Typography>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        mt: 2,
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr 1fr",
+                        gap: 1,
+                      }}
+                    >
+                      <Button
+                        onClick={() => router.push(`/tournaments/${t._id}/teams`)}
+                        variant="contained"
+                        startIcon={<GroupsRoundedIcon />}
+                        sx={{
+                          bgcolor: "#16a34a",
+                          borderRadius: "14px",
+                          fontSize: 11,
+                          fontWeight: 900,
+                          textTransform: "none",
+                          boxShadow: "none",
+                          "&:hover": { bgcolor: "#15803d", boxShadow: "none" },
+                        }}
+                      >
+                        Teams
+                      </Button>
+
+                      <Button
+                        onClick={() => router.push(`/tournaments/${t._id}`)}
+                        variant="contained"
+                        startIcon={<SportsCricketRoundedIcon />}
+                        sx={{
+                          bgcolor: "#f97316",
+                          borderRadius: "14px",
+                          fontSize: 11,
+                          fontWeight: 900,
+                          textTransform: "none",
+                          boxShadow: "none",
+                          "&:hover": { bgcolor: "#ea580c", boxShadow: "none" },
+                        }}
+                      >
+                        Match
+                      </Button>
+
+                      <Button
+                        onClick={() => openStatsModal(t)}
+                        variant="contained"
+                        startIcon={<BarChartRoundedIcon />}
+                        sx={{
+                          bgcolor: "#7c3aed",
+                          borderRadius: "14px",
+                          fontSize: 11,
+                          fontWeight: 900,
+                          textTransform: "none",
+                          boxShadow: "none",
+                          "&:hover": { bgcolor: "#6d28d9", boxShadow: "none" },
+                        }}
+                      >
+                        Stats
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+
+                {(index + 1) % 4 === 0 && <AdCard />}
+              </Box>
+            ))}
+          </Box>
+        )}
+
+        <AdCard />
+      </main>
+
+      <Dialog
+        open={statsOpen}
+        onClose={closeStatsModal}
+        fullWidth
+        maxWidth="lg"
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: "28px",
+            overflow: "hidden",
+            bgcolor: "#f8fafc",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            bgcolor: "#0d6bde",
+            color: "#fff",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <Box>
+            <Typography sx={{ fontSize: 24, fontWeight: 950 }}>
+              Tournament Stats
+            </Typography>
+
+            <Typography sx={{ fontSize: 13, opacity: 0.9 }}>
+              {selectedTournament?.name}
+            </Typography>
+          </Box>
+
+          <IconButton onClick={closeStatsModal} sx={{ color: "#fff" }}>
+            <CloseRoundedIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 2 }}>
+          <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+            <Button
+              onClick={() => setActiveTab("batting")}
+              variant={activeTab === "batting" ? "contained" : "outlined"}
+              sx={{
+                borderRadius: "999px",
+                fontWeight: 900,
+                textTransform: "none",
+              }}
+            >
+              Batting
+            </Button>
+
+            <Button
+              onClick={() => setActiveTab("bowling")}
+              variant={activeTab === "bowling" ? "contained" : "outlined"}
+              sx={{
+                borderRadius: "999px",
+                fontWeight: 900,
+                textTransform: "none",
+              }}
+            >
+              Bowling
+            </Button>
+          </Box>
+
+          {loadingStats ? (
+            <Card sx={{ borderRadius: "20px", p: 5, textAlign: "center" }}>
+              <Typography sx={{ fontWeight: 900 }}>Loading stats...</Typography>
+            </Card>
+          ) : (
+            <StatsTable activeTab={activeTab} stats={stats} />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Footer />
-    </>
+    </div>
+  );
+}
+
+function StatsTable({ activeTab, stats }: any) {
+  return (
+    <Card
+      sx={{
+        borderRadius: "22px",
+        overflow: "hidden",
+        border: "1px solid #cbd5e1",
+      }}
+    >
+      <Box
+        sx={{
+          bgcolor: activeTab === "batting" ? "#16a34a" : "#7c3aed",
+          color: "#fff",
+          px: 2,
+          py: 1.5,
+        }}
+      >
+        <Typography sx={{ fontWeight: 950 }}>
+          {activeTab === "batting" ? "Top Batsmen" : "Top Bowlers"}
+        </Typography>
+      </Box>
+
+      <Box sx={{ overflowX: "auto" }}>
+        <table className="w-full min-w-[850px] text-sm">
+          <thead className="bg-slate-100 text-slate-700">
+            {activeTab === "batting" ? (
+              <tr>
+                <th className="px-3 py-3 text-left">#</th>
+                <th className="px-3 py-3 text-left">Player</th>
+                <th className="px-3 py-3 text-left">Team</th>
+                <th className="px-3 py-3 text-center">M</th>
+                <th className="px-3 py-3 text-center">Runs</th>
+                <th className="px-3 py-3 text-center">Avg</th>
+                <th className="px-3 py-3 text-center">SR</th>
+              </tr>
+            ) : (
+              <tr>
+                <th className="px-3 py-3 text-left">#</th>
+                <th className="px-3 py-3 text-left">Player</th>
+                <th className="px-3 py-3 text-left">Team</th>
+                <th className="px-3 py-3 text-center">M</th>
+                <th className="px-3 py-3 text-center">Overs</th>
+                <th className="px-3 py-3 text-center">W</th>
+                <th className="px-3 py-3 text-center">Eco</th>
+                <th className="px-3 py-3 text-center">SR</th>
+              </tr>
+            )}
+          </thead>
+
+          <tbody>
+            {(activeTab === "batting" ? stats.batsmen : stats.bowlers)
+              .length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-3 py-10 text-center font-bold">
+                  No stats found
+                </td>
+              </tr>
+            ) : activeTab === "batting" ? (
+              stats.batsmen.map((p: any, index: number) => (
+                <tr key={`${p.team}-${p.name}`} className="border-b border-slate-200">
+                  <td className="px-3 py-3 font-black">{index + 1}</td>
+                  <td className="px-3 py-3 font-black text-[#0d6bde]">{p.name}</td>
+                  <td className="px-3 py-3">{p.team}</td>
+                  <td className="px-3 py-3 text-center">{p.matches}</td>
+                  <td className="px-3 py-3 text-center font-black">{p.totalRuns}</td>
+                  <td className="px-3 py-3 text-center">{p.average}</td>
+                  <td className="px-3 py-3 text-center">{p.strikeRate}</td>
+                </tr>
+              ))
+            ) : (
+              stats.bowlers.map((p: any, index: number) => (
+                <tr
+                  key={`${p.team}-${p.name}-${index}`}
+                  className="border-b border-slate-200"
+                >
+                  <td className="px-3 py-3 font-black">{index + 1}</td>
+                  <td className="px-3 py-3 font-black text-[#0d6bde]">{p.name}</td>
+                  <td className="px-3 py-3">{p.team}</td>
+                  <td className="px-3 py-3 text-center">{p.matches}</td>
+                  <td className="px-3 py-3 text-center">{p.overs}</td>
+                  <td className="px-3 py-3 text-center font-black">{p.wickets}</td>
+                  <td className="px-3 py-3 text-center">{p.economy}</td>
+                  <td className="px-3 py-3 text-center">{p.strikeRate}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </Box>
+    </Card>
   );
 }

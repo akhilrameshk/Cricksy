@@ -30,11 +30,7 @@ export default function Header() {
       label: "Series",
       icon: <EmojiEventsRoundedIcon fontSize="small" />,
     },
-    {
-      href: "/scorecards",
-      label: "Scores",
-      icon: <ScoreboardRoundedIcon fontSize="small" />,
-    },
+    
     {
       href: "/news",
       label: "News",
@@ -115,9 +111,7 @@ export default function Header() {
             gap: 3,
           }}
         >
-          <Link href="/" className="text-white no-underline">
-            <HomeRoundedIcon />
-          </Link>
+          
 
           <Link href="/" className="no-underline">
             <Typography
