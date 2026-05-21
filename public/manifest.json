@@ -1,0 +1,22 @@
+{
+  "name": "Cricksy",
+  "short_name": "Cricksy",
+  "description": "Live cricket scores and fantasy teams",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#e9eef1",
+  "theme_color": "#0d6bde",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
