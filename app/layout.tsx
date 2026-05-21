@@ -5,6 +5,8 @@ import { ThemeProvider } from "./providers";
 export const metadata: Metadata = {
   title: "Cricksy",
   description: "Live cricket scores and tournaments",
+   manifest: "/manifest.json",
+  themeColor: "#0d6bde",
    icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
