@@ -3,9 +3,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "@mui/material/styles";
+import Link from "next/link";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Typography,
+} from "@mui/material";
+
+import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
 
 export default function AddTournament() {
   const router = useRouter();
+  const muiTheme = useTheme();
 
   const [form, setForm] = useState({
     name: "",
@@ -42,53 +56,100 @@ export default function AddTournament() {
   };
 
   return (
-    <div className="p-8 text-white max-w-xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Add Tournament</h1>
+    <Box sx={{ minHeight: "100dvh", bgcolor: muiTheme.palette.background.default, color: muiTheme.palette.text.primary, display: "flex", flexDirection: "column" }}>
+      <Header />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="name"
-          placeholder="Tournament Name"
-          className="input"
-          onChange={handleChange}
-          required
-        />
+      <Box component="main" sx={{ mx: "auto", maxWidth: "512px", px: 2, py: 3, flexGrow: 1, width: "100%" }}>
+        <Button component={Link} href="/tournaments" variant="outlined" sx={{ mb: 3 }}>
+          ← Back
+        </Button>
 
-        <select name="format" className="input" onChange={handleChange}>
-          <option>T20</option>
-          <option>ODI</option>
-          <option>T10</option>
-        </select>
+        <Typography sx={{ fontSize: 28, fontWeight: 900, mb: 4 }}>Add Tournament</Typography>
 
-        <input
-          name="venue"
-          placeholder="Venue"
-          className="input"
-          onChange={handleChange}
-        />
+        <Card sx={{ borderRadius: "16px", border: `1px solid ${muiTheme.palette.divider}` }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <TextField
+                fullWidth
+                label="Tournament Name"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+                variant="outlined"
+              />
 
-        <input
-          type="date"
-          name="startDate"
-          className="input"
-          onChange={handleChange}
-        />
+              <TextField
+                fullWidth
+                label="Format"
+                name="format"
+                value={form.format}
+                onChange={handleChange}
+                select
+                variant="outlined"
+              >
+                <option value="T20">T20</option>
+                <option value="ODI">ODI</option>
+                <option value="Test">Test</option>
+              </TextField>
 
-        <input
-          type="date"
-          name="endDate"
-          className="input"
-          onChange={handleChange}
-        />
+              <TextField
+                fullWidth
+                label="Venue"
+                name="venue"
+                value={form.venue}
+                onChange={handleChange}
+                required
+                variant="outlined"
+              />
 
-        <select name="status" className="input" onChange={handleChange}>
-          <option>Upcoming</option>
-          <option>Live</option>
-          <option>Completed</option>
-        </select>
+              <TextField
+                fullWidth
+                label="Start Date"
+                name="startDate"
+                type="date"
+                value={form.startDate}
+                onChange={handleChange}
+                required
+                variant="outlined"
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
 
-        <button className="btn">Create Tournament</button>
-      </form>
-    </div>
+              <TextField
+                fullWidth
+                label="End Date"
+                name="endDate"
+                type="date"
+                value={form.endDate}
+                onChange={handleChange}
+                required
+                variant="outlined"
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+
+              <TextField
+                fullWidth
+                label="Status"
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                select
+                variant="outlined"
+              >
+                <option value="Upcoming">Upcoming</option>
+                <option value="Live">Live</option>
+                <option value="Completed">Completed</option>
+              </TextField>
+
+              <Button type="submit" variant="contained" fullWidth sx={{ mt: 2, py: 1.5, fontSize: 15, fontWeight: 900 }}>
+                Create Tournament
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+
+      <Footer />
+    </Box>
   );
 }

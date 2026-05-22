@@ -3,12 +3,34 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  MenuItem,
+  TextField,
+  Typography,
+} from "@mui/material";
+
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import SportsCricketRoundedIcon from "@mui/icons-material/SportsCricketRounded";
+
+import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
+import AdCard from "@/app/components/AdCard";
+import { useTheme } from "@/app/providers";
 
 export default function AddMatchPage() {
   const router = useRouter();
   const params = useParams();
+  const { theme } = useTheme();
 
   const tournamentId = params.id as string;
+
+  const isDark = theme === "dark";
 
   const [teams, setTeams] = useState<any[]>([]);
 
@@ -23,7 +45,6 @@ export default function AddMatchPage() {
     result: "",
   });
 
-  // LOAD TEAMS
   useEffect(() => {
     if (!tournamentId) return;
 
@@ -32,13 +53,11 @@ export default function AddMatchPage() {
       .then((res) => setTeams(res.data || []));
   }, [tournamentId]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setForm({
-      ...form,
+  const handleChange = (e: any) => {
+    setForm((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,91 +89,220 @@ export default function AddMatchPage() {
     }
   };
 
-  // FILTER TEAMS (prevent same selection)
   const teamAOptions = teams.filter((t) => t.teamName !== form.teamB);
   const teamBOptions = teams.filter((t) => t.teamName !== form.teamA);
 
+  const inputSx = {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "16px",
+      bgcolor: isDark ? "#0f172a" : "#ffffff",
+      color: isDark ? "#ffffff" : "#0f172a",
+      "& fieldset": {
+        borderColor: isDark ? "#334155" : "#cbd5e1",
+      },
+      "&:hover fieldset": {
+        borderColor: "#0d6bde",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "#0d6bde",
+      },
+    },
+    "& .MuiInputLabel-root": {
+      color: isDark ? "#cbd5e1" : "#64748b",
+      "&.Mui-focused": {
+        color: "#0d6bde",
+      },
+    },
+    "& .MuiSelect-icon": {
+      color: isDark ? "#ffffff" : "#0f172a",
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-6 text-white">
-      <div className="mx-auto max-w-xl">
-        <h1 className="mb-6 text-center text-[28px] font-bold text-white">
-          Add Match
-        </h1>
+    <Box
+      sx={{
+        minHeight: "100dvh",
+        bgcolor: isDark ? "#020617" : "#e9eef1",
+        color: isDark ? "#ffffff" : "#0f172a",
+      }}
+    >
+      <Header />
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 rounded-xl border border-slate-700 bg-slate-900 p-5"
+      <Box
+        component="main"
+        sx={{
+          mx: "auto",
+          maxWidth: 512,
+          px: 2,
+          pt: "58px",
+          pb: 10,
+          width: "100%",
+        }}
+      >
+        <Box sx={{ pt: 2 }}>
+          <Button
+            component={Link}
+            href={`/tournaments/${tournamentId}`}
+            startIcon={<ArrowBackRoundedIcon />}
+            variant="contained"
+            sx={{
+              bgcolor: "#0d6bde",
+              borderRadius: "999px",
+              fontWeight: 900,
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": {
+                bgcolor: "#0a58b8",
+                boxShadow: "none",
+              },
+            }}
+          >
+            Back
+          </Button>
+        </Box>
+
+        <AdCard />
+
+        <Card
+          sx={{
+            mt: 2,
+            borderRadius: "26px",
+            overflow: "hidden",
+            bgcolor: isDark ? "#0f172a" : "#ffffff",
+            border: `1px solid ${isDark ? "#334155" : "#cbd5e1"}`,
+            boxShadow: isDark
+              ? "0 6px 24px rgba(0,0,0,0.35)"
+              : "0 6px 24px rgba(15,23,42,0.08)",
+          }}
         >
-          {/* TEAM A */}
-          <select
-            name="teamA"
-            value={form.teamA}
-            onChange={handleChange}
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
-            required
+          <Box
+            sx={{
+              bgcolor: "#0d6bde",
+              color: "#fff",
+              p: 2,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
           >
-            <option value="">Select Team A</option>
-            {teamAOptions.map((t) => (
-              <option key={t._id} value={t.teamName}>
-                {t.teamName}
-              </option>
-            ))}
-          </select>
+            <SportsCricketRoundedIcon />
 
-          {/* TEAM B */}
-          <select
-            name="teamB"
-            value={form.teamB}
-            onChange={handleChange}
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
-            required
-          >
-            <option value="">Select Team B</option>
-            {teamBOptions.map((t) => (
-              <option key={t._id} value={t.teamName}>
-                {t.teamName}
-              </option>
-            ))}
-          </select>
+            <Box>
+              <Typography sx={{ fontSize: 22, fontWeight: 950 }}>
+                Add Match
+              </Typography>
 
-          {/* VENUE */}
-          <input
-            name="venue"
-            value={form.venue}
-            onChange={handleChange}
-            placeholder="Venue"
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
-          />
+              <Typography sx={{ fontSize: 12, opacity: 0.9 }}>
+                Create a new tournament match
+              </Typography>
+            </Box>
+          </Box>
 
-          {/* DATE */}
-          <input
-            type="datetime-local"
-            name="matchDate"
-            value={form.matchDate}
-            onChange={handleChange}
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
-          />
+          <CardContent sx={{ p: 2.5 }}>
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              sx={{ display: "grid", gap: 2 }}
+            >
+              <TextField
+                fullWidth
+                label="Team A"
+                name="teamA"
+                value={form.teamA}
+                onChange={handleChange}
+                select
+                required
+                sx={inputSx}
+              >
+                <MenuItem value="">Select Team A</MenuItem>
+                {teamAOptions.map((t) => (
+                  <MenuItem key={t._id} value={t.teamName}>
+                    {t.teamName}
+                  </MenuItem>
+                ))}
+              </TextField>
 
-          {/* STATUS */}
-          <select
-            name="status"
-            value={form.status}
-            onChange={handleChange}
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
-          >
-            <option value="Upcoming">Upcoming</option>
-            <option value="Live">Live</option>
-            <option value="Completed">Completed</option>
-          </select>
+              <TextField
+                fullWidth
+                label="Team B"
+                name="teamB"
+                value={form.teamB}
+                onChange={handleChange}
+                select
+                required
+                sx={inputSx}
+              >
+                <MenuItem value="">Select Team B</MenuItem>
+                {teamBOptions.map((t) => (
+                  <MenuItem key={t._id} value={t.teamName}>
+                    {t.teamName}
+                  </MenuItem>
+                ))}
+              </TextField>
 
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-orange-500 px-5 py-3 font-semibold text-white hover:bg-orange-600"
-          >
-            Add Match →
-          </button>
-        </form>
-      </div>
-    </div>
+              <TextField
+                fullWidth
+                label="Venue"
+                name="venue"
+                value={form.venue}
+                onChange={handleChange}
+                sx={inputSx}
+              />
+
+              <TextField
+                fullWidth
+                label="Match Date & Time"
+                name="matchDate"
+                type="datetime-local"
+                value={form.matchDate}
+                onChange={handleChange}
+                slotProps={{ inputLabel: { shrink: true } }}
+                sx={inputSx}
+              />
+
+              <TextField
+                fullWidth
+                label="Status"
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                select
+                sx={inputSx}
+              >
+                <MenuItem value="Upcoming">Upcoming</MenuItem>
+                <MenuItem value="Live">Live</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+              </TextField>
+
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                sx={{
+                  mt: 1,
+                  height: 48,
+                  bgcolor: "#0d6bde",
+                  borderRadius: "16px",
+                  fontSize: 15,
+                  fontWeight: 950,
+                  textTransform: "none",
+                  boxShadow: "none",
+                  "&:hover": {
+                    bgcolor: "#0a58b8",
+                    boxShadow: "none",
+                  },
+                }}
+              >
+                Add Match
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+
+        <AdCard />
+      </Box>
+
+      <Footer />
+    </Box>
   );
 }

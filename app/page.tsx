@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTheme } from "@mui/material/styles";
 import {
   Box,
   Button,
@@ -16,6 +17,7 @@ import Footer from "./components/Footer";
 import Header from "./components/Header";
 
 export default function HomePage() {
+  const muiTheme = useTheme();
   const [liveMatches, setLiveMatches] = useState<any[]>([]);
   const [localMatches, setLocalMatches] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
@@ -39,12 +41,12 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-dvh bg-[#e9eef1] text-black dark:bg-slate-950 dark:text-white">
+    <Box sx={{ minHeight: "100dvh", bgcolor: muiTheme.palette.background.default, color: muiTheme.palette.text.primary }}>
       <Header />
 
-      <main className="mx-auto max-w-md pt-14 pb-20">
-        <section className="px-2 py-2">
-          <Card sx={{ borderRadius: "14px", bgcolor: "#fff7ed", mt: "56px" }}>
+      <Box component="main" sx={{ mx: "auto", maxWidth: "448px", pt: 7, pb: 20 }}>
+        <Box component="section" sx={{ px: 2, py: 2 }}>
+          <Card sx={{ borderRadius: "14px", bgcolor: muiTheme.palette.mode === "dark" ? "rgba(59, 130, 246, 0.1)" : "#fff7ed", mt: 7, border: `1px solid ${muiTheme.palette.divider}` }}>
             <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
              
 
@@ -55,9 +57,9 @@ export default function HomePage() {
               </Typography>
             </CardContent>
           </Card>
-        </section>
+        </Box>
 
-        <section className="px-2 pt-[5px]">
+        <Box component="section" sx={{ px: 2, pt: 0.5 }}>
           <ScrollRow>
             {liveMatches.length === 0 ? (
               <EmptyCard text="No live matches available" />
@@ -67,11 +69,11 @@ export default function HomePage() {
               ))
             )}
           </ScrollRow>
-        </section>
+        </Box>
 
         {liveMatches.length > 0 && <AdCard />}
 
-        <section className="px-2 pt-[5px]">
+        <Box component="section" sx={{ px: 2, pt: 0.5 }}>
           <SectionTitle title="Local Matches" href="/matches" />
 
           <ScrollRow>
@@ -85,11 +87,11 @@ export default function HomePage() {
               ))
             )}
           </ScrollRow>
-        </section>
+        </Box>
 
         {localMatches.length > 0 && <AdCard />}
 
-        <section className="px-2 pt-[5px]">
+        <Box component="section" sx={{ px: 2, pt: 0.5 }}>
           <SectionTitle title="Cricket News" href="/news" />
 
           <ScrollRow>
@@ -101,13 +103,13 @@ export default function HomePage() {
               ))
             )}
           </ScrollRow>
-        </section>
+        </Box>
 
         {news.length > 0 && <AdCard />}
-      </main>
+      </Box>
 
       <Footer />
-    </div>
+    </Box>
   );
 }
 

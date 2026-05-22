@@ -4,7 +4,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useTheme } from "@mui/material/styles";
 import {
   Box,
   Button,
@@ -39,6 +40,7 @@ const getStatusColor = (status: string) => {
 export default function TournamentDetailsPage() {
   const params = useParams();
   const tournamentId = params.id as string;
+  const muiTheme = useTheme();
 
   const [matches, setMatches] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
@@ -58,7 +60,39 @@ export default function TournamentDetailsPage() {
     const data = await res.json();
     setMatches(data.data || []);
   };
+const router = useRouter();
+const handleScoreClick = async (match: any) => {
+  try {
+    const res = await fetch(`/api/matches/${match._id}`);
 
+    let data = null;
+
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    const fullMatch = data?.data || match;
+
+    if (!fullMatch.lineupUpdated) {
+      alert("Please update playing 11 before scoring");
+      openLineupModal(match, false);
+      return;
+    }else{
+      
+       openLineupModal(match, false);
+           router.push(
+      `/tournaments/${tournamentId}/matches/${match._id}/score`
+    );
+    }
+
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to load match");
+  }
+};
   const loadTeams = async () => {
     const res = await fetch(`/api/teams?tournamentId=${tournamentId}`);
     const data = await res.json();
@@ -82,20 +116,26 @@ export default function TournamentDetailsPage() {
     setSelectedMatch(match);
     setViewOnlyLineup(viewOnly);
     setLineupModal(true);
+    await loadMatchPlayers(match);
 
+  };
+const loadMatchPlayers = async (match: any) => {
+  try {
     const teamA = teams.find(
       (t) =>
-        t.teamName?.trim().toLowerCase() === match.teamA?.trim().toLowerCase()
+        t.teamName?.trim().toLowerCase() ===
+        match.teamA?.trim().toLowerCase()
     );
 
     const teamB = teams.find(
       (t) =>
-        t.teamName?.trim().toLowerCase() === match.teamB?.trim().toLowerCase()
+        t.teamName?.trim().toLowerCase() ===
+        match.teamB?.trim().toLowerCase()
     );
 
     if (!teamA || !teamB) {
       alert("Team not found. Please check team names are matching.");
-      return;
+      return null;
     }
 
     const [resA, resB] = await Promise.all([
@@ -103,16 +143,47 @@ export default function TournamentDetailsPage() {
       fetch(`/api/players?teamId=${teamB._id}`),
     ]);
 
-    const dataA = await resA.json();
-    const dataB = await resB.json();
+    let dataA = null;
+    let dataB = null;
 
-    setTeamAPlayers(dataA.data || []);
-    setTeamBPlayers(dataB.data || []);
+    try {
+      dataA = await resA.json();
+    } catch {
+      dataA = { data: [] };
+    }
 
-    setTeamAPlayingXI((match.teamAPlayingXI || []).map(getPlayerId));
-    setTeamBPlayingXI((match.teamBPlayingXI || []).map(getPlayerId));
-  };
+    try {
+      dataB = await resB.json();
+    } catch {
+      dataB = { data: [] };
+    }
 
+    const teamAData = dataA?.data || [];
+    const teamBData = dataB?.data || [];
+
+    setTeamAPlayers(teamAData);
+    setTeamBPlayers(teamBData);
+
+    setTeamAPlayingXI(
+      (match.teamAPlayingXI || []).map(getPlayerId)
+    );
+
+    setTeamBPlayingXI(
+      (match.teamBPlayingXI || []).map(getPlayerId)
+    );
+
+    return {
+      teamA,
+      teamB,
+      teamAPlayers: teamAData,
+      teamBPlayers: teamBData,
+    };
+  } catch (error) {
+    console.error(error);
+    alert("Failed to load players");
+    return null;
+  }
+};
   const closeLineupModal = () => {
     setLineupModal(false);
     setSelectedMatch(null);
@@ -174,10 +245,10 @@ export default function TournamentDetailsPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-[#e9eef1] text-black dark:bg-slate-950 dark:text-white">
+    <Box sx={{ minHeight: "100dvh", bgcolor: muiTheme.palette.background.default, color: muiTheme.palette.text.primary }}>
       <Header />
 
-      <main className="mx-auto max-w-md pt-[58px] pb-24 lg:max-w-6xl">
+      <Box component="main" sx={{ mx: "auto", maxWidth: { xs: "448px", lg: "1280px" }, pt: 7, pb: 24 }}>
         <Box sx={{ px: 2, pt: 2, display: "flex", justifyContent: "space-between", gap: 1 }}>
           <Button
             component={Link}
@@ -185,12 +256,9 @@ export default function TournamentDetailsPage() {
             startIcon={<HomeRoundedIcon />}
             variant="contained"
             sx={{
-              bgcolor: "#0d6bde",
               borderRadius: "999px",
               fontWeight: 900,
               textTransform: "none",
-              boxShadow: "none",
-              "&:hover": { bgcolor: "#0a58b8", boxShadow: "none" },
             }}
           >
             Home
@@ -258,11 +326,12 @@ export default function TournamentDetailsPage() {
           >
             {matches.map((m, index) => (
               <Box key={m._id}>
-                <MatchCard
-                  match={m}
-                  tournamentId={tournamentId}
-                  openLineupModal={openLineupModal}
-                />
+              <MatchCard
+  match={m}
+  tournamentId={tournamentId}
+  openLineupModal={openLineupModal}
+  handleScoreClick={handleScoreClick}
+/>
 
                 {(index + 1) % 4 === 0 && <AdCard />}
               </Box>
@@ -271,9 +340,10 @@ export default function TournamentDetailsPage() {
         )}
 
         {matches.length > 0 && <AdCard />}
-      </main>
+      </Box>
 
       <Footer />
+
 <Dialog
   open={lineupModal}
   onClose={closeLineupModal}
@@ -283,20 +353,36 @@ export default function TournamentDetailsPage() {
     paper: {
       sx: {
         borderRadius: "24px",
-        bgcolor: "#f8fafc",
+        bgcolor:
+          muiTheme.palette.mode === "dark"
+            ? "#020617"
+            : "#f8fafc",
+        color:
+          muiTheme.palette.mode === "dark"
+            ? "#ffffff"
+            : "#0f172a",
+        border:
+          muiTheme.palette.mode === "dark"
+            ? "1px solid #1e293b"
+            : "1px solid #e2e8f0",
       },
     },
   }}
 >
         <DialogTitle
-          sx={{
-            bgcolor: "#0d6bde",
-            color: "#fff",
+         sx={{
+    p: 2,
+    bgcolor:
+      muiTheme.palette.mode === "dark"
+        ? "#020617"
+        : "#f8fafc",
+         color: "#fff",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             gap: 1,
-          }}
+  }}
+         
         >
           <Box>
             <Typography sx={{ fontSize: 20, fontWeight: 950 }}>
@@ -355,11 +441,67 @@ export default function TournamentDetailsPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </Box>
   );
 }
+function TeamScoreRow({
+  team,
+  score,
+  overs,
+  active,
+}: {
+  team: string;
+  score: string;
+  overs: string;
+  active?: boolean;
+}) {
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "1fr auto",
+        alignItems: "center",
+        gap: 1,
+        borderRadius: "14px",
+        bgcolor: active ? "#eff6ff" : "#ffffff",
+        border: active ? "1px solid #bfdbfe" : "1px solid #e2e8f0",
+        px: 1.3,
+        py: 1.1,
+      }}
+    >
+      <Box sx={{ minWidth: 0 }}>
+        <Typography
+          sx={{
+            fontSize: 13,
+            fontWeight: 950,
+            color: "#0f172a",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {team}
+        </Typography>
 
-function MatchCard({ match, tournamentId, openLineupModal }: any) {
+        <Typography sx={{ mt: 0.3, fontSize: 11, fontWeight: 800, color: "#64748b" }}>
+          {overs} Ov
+        </Typography>
+      </Box>
+
+      <Typography
+        sx={{
+          fontSize: 18,
+          fontWeight: 950,
+          color: active ? "#0d6bde" : "#334155",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {score}
+      </Typography>
+    </Box>
+  );
+}
+function MatchCard({ match, openLineupModal, handleScoreClick }: any) {
   const statusColor = getStatusColor(match.status);
 
   return (
@@ -392,29 +534,58 @@ function MatchCard({ match, tournamentId, openLineupModal }: any) {
       </Box>
 
       <CardContent sx={{ p: 2 }}>
-        <Box
-          sx={{
-            borderRadius: "18px",
-            bgcolor: "#f8fafc",
-            border: "1px solid #e2e8f0",
-            p: 1.5,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <LocationOnRoundedIcon sx={{ fontSize: 17, color: "#64748b" }} />
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#64748b" }}>
-              {match.venue || "Venue not added"}
-            </Typography>
-          </Box>
+       <TeamScoreRow
+  team={match.teamA}
+  score={match.teamAScore || "0/0"}
+  overs={match.teamAOvers || "0.0"}
+  active={match.battingTeam === "A"}
+/>
+       <TeamScoreRow
+  team={match.teamB}
+  score={match.teamBScore || "0/0"}
+  overs={match.teamBOvers || "0.0"}
+  active={match.battingTeam === "B"}
+/>
 
-          <Typography sx={{ mt: 1.5, fontSize: 32, fontWeight: 950, color: "#0d6bde", textAlign: "center" }}>
-            {match.score || "0/0"}
-          </Typography>
+        {match?.status === "Completed" && (
+  <Box
+    sx={{
+      mt: 2,
+      borderRadius: "16px",
+      bgcolor: match.result ? "#dcfce7" : "#f8fafc",
+      border: `1px solid ${
+        match.result ? "#86efac" : "#e2e8f0"
+      }`,
+      px: 1.5,
+      py: 1.25,
+      textAlign: "center",
+    }}
+  >
+    <Typography
+      sx={{
+        fontSize: 12,
+        fontWeight: 900,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        color: match.result ? "#166534" : "#64748b",
+      }}
+    >
+      Result
+    </Typography>
 
-          <Typography sx={{ mt: 1, fontSize: 13, fontWeight: 800, color: match.result ? "#16a34a" : "#64748b", textAlign: "center" }}>
-            {match.result || "Match not completed"}
-          </Typography>
-        </Box>
+    <Typography
+      sx={{
+        mt: 0.7,
+        fontSize: 14,
+        fontWeight: 900,
+        lineHeight: 1.5,
+        color: match.result ? "#166534" : "#0f172a",
+      }}
+    >
+      {match.result || "Match not completed"}
+    </Typography>
+  </Box>
+)}
 
         <Box sx={{ mt: 2, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
           <Button
@@ -432,19 +603,22 @@ function MatchCard({ match, tournamentId, openLineupModal }: any) {
           </Button>
 
           <Button
-            component={Link}
-            href={`/tournaments/${tournamentId}/matches/${match._id}/score`}
-            variant="contained"
-            sx={{
-              bgcolor: "#f97316",
-              borderRadius: "14px",
-              fontWeight: 900,
-              textTransform: "none",
-              boxShadow: "none",
-            }}
-          >
-            Score
-          </Button>
+  onClick={() => handleScoreClick(match)}
+  variant="contained"
+  sx={{
+    bgcolor: "#f97316",
+    borderRadius: "14px",
+    fontWeight: 900,
+    textTransform: "none",
+    boxShadow: "none",
+    "&:hover": {
+      bgcolor: "#ea580c",
+      boxShadow: "none",
+    },
+  }}
+>
+  Score
+</Button>
         </Box>
 
         <Box sx={{ mt: 1.5, textAlign: "center" }}>
@@ -472,18 +646,54 @@ function PlayersBox({
   togglePlayer,
   viewOnlyLineup,
 }: any) {
+  const muiTheme = useTheme();
+
+  const isDark = muiTheme.palette.mode === "dark";
+
   return (
-    <Card sx={{ borderRadius: "20px", border: "1px solid #cbd5e1" }}>
-      <Box sx={{ bgcolor: "#f8fafc", p: 2, borderBottom: "1px solid #e2e8f0" }}>
-        <Typography sx={{ fontSize: 18, fontWeight: 950 }}>{title}</Typography>
-        <Typography sx={{ fontSize: 12, fontWeight: 800, color: "#64748b" }}>
+    <Card
+      sx={{
+        borderRadius: "20px",
+        border: isDark
+          ? "1px solid #334155"
+          : "1px solid #cbd5e1",
+        bgcolor: isDark ? "#0f172a" : "#ffffff",
+        color: isDark ? "#ffffff" : "#0f172a",
+      }}
+    >
+      <Box
+        sx={{
+          bgcolor: isDark ? "#111827" : "#f8fafc",
+          p: 2,
+          borderBottom: isDark
+            ? "1px solid #334155"
+            : "1px solid #e2e8f0",
+        }}
+      >
+        <Typography sx={{ fontSize: 18, fontWeight: 950 }}>
+          {title}
+        </Typography>
+
+        <Typography
+          sx={{
+            fontSize: 12,
+            fontWeight: 800,
+            color: isDark ? "#94a3b8" : "#64748b",
+          }}
+        >
           Selected: {selected.length}/11
         </Typography>
       </Box>
 
       <CardContent sx={{ p: 1.5 }}>
         {players.length === 0 ? (
-          <Typography sx={{ p: 2, color: "#64748b", fontWeight: 800 }}>
+          <Typography
+            sx={{
+              p: 2,
+              color: isDark ? "#94a3b8" : "#64748b",
+              fontWeight: 800,
+            }}
+          >
             No players found
           </Typography>
         ) : (
@@ -493,7 +703,9 @@ function PlayersBox({
             return (
               <Box
                 key={player._id}
-                onClick={() => togglePlayer(player._id, selected, setSelected)}
+                onClick={() =>
+                  togglePlayer(player._id, selected, setSelected)
+                }
                 sx={{
                   mb: 1,
                   p: 1.25,
@@ -502,20 +714,46 @@ function PlayersBox({
                   alignItems: "center",
                   justifyContent: "space-between",
                   cursor: viewOnlyLineup ? "default" : "pointer",
-                  bgcolor: checked ? "#eff6ff" : "#fff",
-                  border: checked ? "1px solid #0d6bde" : "1px solid #e2e8f0",
+                  bgcolor: checked
+                    ? isDark
+                      ? "rgba(13,107,222,0.18)"
+                      : "#eff6ff"
+                    : isDark
+                    ? "#111827"
+                    : "#ffffff",
+                  border: checked
+                    ? "1px solid #0d6bde"
+                    : isDark
+                    ? "1px solid #334155"
+                    : "1px solid #e2e8f0",
+                  transition: "0.2s",
                 }}
               >
                 <Box>
-                  <Typography sx={{ fontSize: 14, fontWeight: 900 }}>
+                  <Typography
+                    sx={{
+                      fontSize: 14,
+                      fontWeight: 900,
+                      color: isDark ? "#ffffff" : "#0f172a",
+                    }}
+                  >
                     {player.name}
                   </Typography>
-                  <Typography sx={{ fontSize: 12, color: "#64748b" }}>
+
+                  <Typography
+                    sx={{
+                      fontSize: 12,
+                      color: isDark ? "#94a3b8" : "#64748b",
+                    }}
+                  >
                     {player.role || "-"}
                   </Typography>
                 </Box>
 
-                <Checkbox checked={checked} disabled={viewOnlyLineup} />
+                <Checkbox
+                  checked={checked}
+                  disabled={viewOnlyLineup}
+                />
               </Box>
             );
           })

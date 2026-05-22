@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useTheme } from "@mui/material/styles";
 import {
   Box,
   Button,
@@ -24,6 +25,7 @@ import AdCard from "@/app/components/AdCard";
 
 export default function MatchScorePage() {
   const params = useParams();
+  const muiTheme = useTheme();
 
   const tournamentId = params.id as string;
   const matchId = params.matchId as string;
@@ -109,21 +111,16 @@ export default function MatchScorePage() {
     loadScore();
   }, []);
 
-  useEffect(() => {
-    if (!match || !innings) return;
+useEffect(() => {
+  if (!match || innings) return;
 
-    if (innings.battingTeam === match.teamA) {
-      setBattingTeam(match.teamA);
-      setBowlingTeam(match.teamB);
-      setBattingPlayers(match.teamAPlayingXI || []);
-      setBowlingPlayers(match.teamBPlayingXI || []);
-    } else {
-      setBattingTeam(match.teamB);
-      setBowlingTeam(match.teamA);
-      setBattingPlayers(match.teamBPlayingXI || []);
-      setBowlingPlayers(match.teamAPlayingXI || []);
-    }
-  }, [match, innings]);
+  if (match.lineupUpdated) {
+    setBattingTeam(match.teamA);
+    setBowlingTeam(match.teamB);
+    setBattingPlayers(match.teamAPlayingXI || []);
+    setBowlingPlayers(match.teamBPlayingXI || []);
+  }
+}, [match, innings]);
 
   const firstInnings = inningsList.find((i: any) => i.inningNumber === 1);
   const secondInnings = inningsList.find((i: any) => i.inningNumber === 2);
@@ -171,49 +168,62 @@ export default function MatchScorePage() {
     setCurrentBowler("");
   };
 
-  const startInnings = async () => {
-    if (!match?.lineupUpdated) return alert("Please update lineup first");
+ const startInnings = async () => {
+  if (!match?.lineupUpdated) {
+    alert("Please update playing 11 first");
+    return;
+  }
 
-    if (!battingTeam || !bowlingTeam) {
-      return alert("Please select batting team");
-    }
+  const finalBattingTeam = battingTeam || match.teamA;
+  const finalBowlingTeam =
+    bowlingTeam || (finalBattingTeam === match.teamA ? match.teamB : match.teamA);
 
-    if (!striker || !nonStriker || !currentBowler) {
-      return alert("Please select striker, non-striker and bowler");
-    }
+  const finalBowlingPlayers =
+    finalBowlingTeam === match.teamA
+      ? match.teamAPlayingXI || []
+      : match.teamBPlayingXI || [];
 
-    const bowlerObj = bowlingPlayers.find(
-      (p) => getPlayerName(p) === currentBowler
-    );
+  if (!finalBattingTeam || !finalBowlingTeam) {
+    alert("Please select batting team");
+    return;
+  }
 
-    const res = await fetch("/api/score/setup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tournamentId,
-        matchId,
-        battingTeam,
-        bowlingTeam,
-        striker,
-        nonStriker,
-        currentBowler,
-        currentBowlerId: bowlerObj?._id,
-      }),
-    });
+  if (!striker || !nonStriker || !currentBowler) {
+    alert("Please select striker, non-striker and bowler");
+    return;
+  }
 
-    const data = await res.json();
+  const bowlerObj = finalBowlingPlayers.find(
+    (p: any) => getPlayerName(p) === currentBowler
+  );
 
-    if (data.success) {
-      setInnings(data.data);
-      setStriker(data.data.striker);
-      setNonStriker(data.data.nonStriker);
-      setCurrentBowler(data.data.currentBowler);
-      await loadScore();
-    } else {
-      alert(data.message || "Failed to start innings");
-    }
-  };
+  const res = await fetch("/api/score/setup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      tournamentId,
+      matchId,
+      battingTeam: finalBattingTeam,
+      bowlingTeam: finalBowlingTeam,
+      striker,
+      nonStriker,
+      currentBowler,
+      currentBowlerId: bowlerObj?._id,
+    }),
+  });
 
+  const data = await res.json();
+
+  if (data.success) {
+    setInnings(data.data);
+    setStriker(data.data.striker);
+    setNonStriker(data.data.nonStriker);
+    setCurrentBowler(data.data.currentBowler);
+    await loadScore();
+  } else {
+    alert(data.message || "Failed to start innings");
+  }
+};
   const endInnings = async () => {
     if (!innings) return;
     if (!confirm("Are you sure you want to end this innings?")) return;

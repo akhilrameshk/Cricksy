@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useTheme } from "@mui/material/styles";
 import {
   Box,
   Button,
@@ -30,6 +31,7 @@ import AdCard from "@/app/components/AdCard";
 export default function Page() {
   const { id } = useParams();
   const router = useRouter();
+  const muiTheme = useTheme();
   const tournamentId = id as string;
 
   const [teams, setTeams] = useState<any[]>([]);
@@ -124,10 +126,10 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-dvh bg-[#e9eef1] text-black dark:bg-slate-950 dark:text-white">
+    <Box sx={{ minHeight: "100dvh", bgcolor: muiTheme.palette.background.default, color: muiTheme.palette.text.primary }}>
       <Header />
 
-      <main className="mx-auto max-w-md pt-[58px] pb-24 lg:max-w-7xl">
+      <Box component="main" sx={{ mx: "auto", maxWidth: { xs: "448px", lg: "1280px" }, pt: 7, pb: 24 }}>
         <Box
           sx={{
             px: 2,
@@ -142,7 +144,6 @@ export default function Page() {
             onClick={() => router.push(`/tournaments/${tournamentId}`)}
             variant="contained"
             sx={{
-              bgcolor: "#0d6bde",
               borderRadius: "999px",
               fontWeight: 900,
               textTransform: "none",
@@ -475,10 +476,10 @@ export default function Page() {
         </Box>
 
         <AdCard />
-      </main>
+      </Box>
 
       <Footer />
-    </div>
+    </Box>
   );
 }
 

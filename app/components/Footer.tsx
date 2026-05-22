@@ -3,15 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Box, Tooltip, IconButton } from "@mui/material";
+import { useTheme } from "../providers";
 
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import SportsCricketRoundedIcon from "@mui/icons-material/SportsCricketRounded";
 import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
-import ScoreboardRoundedIcon from "@mui/icons-material/ScoreboardRounded";
 import FeedRoundedIcon from "@mui/icons-material/FeedRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+
 export default function Footer() {
   const pathname = usePathname();
+  const { theme } = useTheme();
+
+  const isDark = theme === "dark";
 
   const links = [
     { href: "/", label: "Home", icon: <HomeRoundedIcon /> },
@@ -33,8 +37,8 @@ export default function Footer() {
         height: "56px",
         width: "100%",
         px: "38px",
-        bgcolor: "#0d6bde",
-        borderTop: "1px solid #0a58b8",
+        bgcolor: isDark ? "#000000" : "#0d6bde",
+        borderTop: isDark ? "1px solid #1e293b" : "1px solid #0a58b8",
         boxShadow: "0 -4px 12px rgba(0,0,0,0.08)",
       }}
     >
@@ -61,10 +65,16 @@ export default function Footer() {
                   width: 42,
                   height: 42,
                   color: active ? "#ffffff" : "rgba(255,255,255,0.72)",
-                  bgcolor: active ? "rgba(255,255,255,0.16)" : "transparent",
+                  bgcolor: active
+                    ? isDark
+                      ? "#1e293b"
+                      : "rgba(255,255,255,0.16)"
+                    : "transparent",
                   transition: "0.2s ease",
                   "&:hover": {
-                    bgcolor: "rgba(255,255,255,0.22)",
+                    bgcolor: isDark
+                      ? "rgba(255,255,255,0.12)"
+                      : "rgba(255,255,255,0.22)",
                     color: "#fff",
                   },
                 }}

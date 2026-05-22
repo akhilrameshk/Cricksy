@@ -1,10 +1,10 @@
-/* eslint-disable react/jsx-no-undef */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTheme } from "@mui/material/styles";
 
 import {
   Box,
@@ -33,6 +33,7 @@ import AdCard from "../components/AdCard";
 
 export default function TournamentsPage() {
   const router = useRouter();
+  const muiTheme = useTheme();
 
   const [data, setData] = useState<any[]>([]);
   const [statsOpen, setStatsOpen] = useState(false);
@@ -72,10 +73,10 @@ export default function TournamentsPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-[#e9eef1] text-black dark:bg-slate-950 dark:text-white">
+    <Box sx={{ minHeight: "100dvh", bgcolor: muiTheme.palette.background.default, color: muiTheme.palette.text.primary }}>
       <Header />
 
-      <main className="mx-auto max-w-md pt-[58px] pb-24 lg:max-w-7xl">
+      <Box component="main" sx={{ mx: "auto", maxWidth: { xs: "448px", lg: "1280px" }, pt: 7, pb: 24 }}>
         <Box
           sx={{
             px: 2,
@@ -372,7 +373,7 @@ export default function TournamentsPage() {
         )}
 
         <AdCard />
-      </main>
+      </Box>
 
       <Dialog
         open={statsOpen}
@@ -450,7 +451,7 @@ export default function TournamentsPage() {
       </Dialog>
 
       <Footer />
-    </div>
+    </Box>
   );
 }
 

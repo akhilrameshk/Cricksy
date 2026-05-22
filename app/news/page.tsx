@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTheme } from "@mui/material/styles";
 
 import {
   Box,
@@ -23,6 +24,7 @@ import Footer from "@/app/components/Footer";
 import AdCard from "@/app/components/AdCard";
 
 export default function NewsPage() {
+  const muiTheme = useTheme();
   const [news, setNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,10 +39,10 @@ export default function NewsPage() {
   }, []);
 
   return (
-    <div className="min-h-dvh bg-[#e9eef1] text-black dark:bg-slate-950 dark:text-white">
+    <Box sx={{ minHeight: "100dvh", bgcolor: muiTheme.palette.background.default, color: muiTheme.palette.text.primary }}>
       <Header />
 
-      <main className="mx-auto max-w-md pt-[58px] pb-24 lg:max-w-4xl">
+      <Box component="main" sx={{ mx: "auto", maxWidth: { xs: "448px", lg: "1280px" }, pt: 7, pb: 24 }}>
         <Box sx={{ px: 2, pt: 2 }}>
           <Button
             component={Link}
@@ -111,10 +113,10 @@ export default function NewsPage() {
         )}
 
         <AdCard />
-      </main>
+      </Box>
 
       <Footer />
-    </div>
+    </Box>
   );
 }
 

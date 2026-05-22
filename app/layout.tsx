@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "./providers";
+
 
 export const metadata: Metadata = {
   title: "Cricksy",
@@ -13,6 +14,9 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
 };
+export const viewport: Viewport = {
+  themeColor: "#0d6bde",
+};
 
 export default function RootLayout({
   children,
@@ -20,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta
           name="google-adsense-account"

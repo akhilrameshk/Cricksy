@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTheme } from "@mui/material/styles";
 
 import {
   Box,
@@ -29,6 +30,7 @@ import Footer from "@/app/components/Footer";
 import AdCard from "@/app/components/AdCard";
 
 export default function FantasyPage() {
+  const muiTheme = useTheme();
   const [matches, setMatches] = useState<any[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -41,10 +43,10 @@ export default function FantasyPage() {
   }, []);
 
   return (
-    <div className="min-h-dvh bg-[#e9eef1] text-black dark:bg-slate-950 dark:text-white">
+    <Box sx={{ minHeight: "100dvh", bgcolor: muiTheme.palette.background.default, color: muiTheme.palette.text.primary }}>
       <Header />
 
-      <main className="mx-auto max-w-md pt-[58px] pb-24 lg:max-w-5xl">
+      <Box component="main" sx={{ mx: "auto", maxWidth: { xs: "448px", lg: "1280px" }, pt: 7, pb: 24 }}>
         <Box sx={{ px: 2, pt: 2, display: "flex", gap: 1 }}>
           <Button
             component={Link}
@@ -126,7 +128,7 @@ export default function FantasyPage() {
         )}
 
         <AdCard />
-      </main>
+      </Box>
 
       <Footer />
 
@@ -135,7 +137,7 @@ export default function FantasyPage() {
         open={Boolean(selectedMatch)}
         onClose={() => setSelectedMatch(null)}
       />
-    </div>
+    </Box>
   );
 }
 
