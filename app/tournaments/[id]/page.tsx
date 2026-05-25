@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTheme } from "@mui/material/styles";
+import { useAdmin } from "../../hooks/useAdmin";
+
 import {
   Box,
   Button,
@@ -41,6 +43,7 @@ export default function TournamentDetailsPage() {
   const params = useParams();
   const tournamentId = params.id as string;
   const muiTheme = useTheme();
+  const { isAdmin, loading } = useAdmin();
 
   const [matches, setMatches] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
@@ -264,22 +267,24 @@ const loadMatchPlayers = async (match: any) => {
             Home
           </Button>
 
-          <Button
-            component={Link}
-            href={`/tournaments/${tournamentId}/matches/add`}
-            startIcon={<AddRoundedIcon />}
-            variant="contained"
-            sx={{
-              bgcolor: "#16a34a",
-              borderRadius: "999px",
-              fontWeight: 900,
-              textTransform: "none",
-              boxShadow: "none",
-              "&:hover": { bgcolor: "#15803d", boxShadow: "none" },
-            }}
-          >
-            Add
-          </Button>
+          {isAdmin && !loading && (
+            <Button
+              component={Link}
+              href={`/tournaments/${tournamentId}/matches/add`}
+              startIcon={<AddRoundedIcon />}
+              variant="contained"
+              sx={{
+                bgcolor: "#16a34a",
+                borderRadius: "999px",
+                fontWeight: 900,
+                textTransform: "none",
+                boxShadow: "none",
+                "&:hover": { bgcolor: "#15803d", boxShadow: "none" },
+              }}
+            >
+              Add Match
+            </Button>
+          )}
         </Box>
 
         <Box sx={{ px: 2, pt: 2 }}>

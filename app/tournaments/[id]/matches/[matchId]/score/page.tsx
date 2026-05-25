@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useTheme } from "@mui/material/styles";
+import { useAdmin } from "@/app/hooks/useAdmin";
 import {
   Box,
   Button,
@@ -25,7 +25,7 @@ import AdCard from "@/app/components/AdCard";
 
 export default function MatchScorePage() {
   const params = useParams();
-  const muiTheme = useTheme();
+  const { isAdmin, loading } = useAdmin();
 
   const tournamentId = params.id as string;
   const matchId = params.matchId as string;
@@ -109,7 +109,8 @@ export default function MatchScorePage() {
   useEffect(() => {
     loadMatch();
     loadScore();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchId]);
 
 useEffect(() => {
   if (!match || innings) return;
@@ -557,7 +558,7 @@ useEffect(() => {
                     : "View Full Scorecard"}
                 </Button>
               </>
-            ) : innings ? (
+            ) : innings && isAdmin && !loading ? (
               <LiveScorePanel
                 innings={innings}
                 overs={overs}
@@ -567,6 +568,18 @@ useEffect(() => {
                 nonStriker={nonStriker}
                 currentBowler={currentBowler}
                 endInnings={endInnings}
+                isAdmin={isAdmin}
+                loading={loading}
+              />
+            ) : innings ? (
+              <LiveScoreSummary
+                innings={innings}
+                overs={overs}
+                target={target}
+                runsToWin={runsToWin}
+                striker={striker}
+                nonStriker={nonStriker}
+                currentBowler={currentBowler}
               />
             ) : (
               <StartInningsPanel
@@ -603,7 +616,7 @@ useEffect(() => {
           </Box>
         )}
 
-        {innings && (
+        {innings && isAdmin && !loading && (
           <Box sx={{ px: 2 }}>
             <ScoringPanel
               innings={innings}
@@ -625,8 +638,14 @@ useEffect(() => {
               getPlayerName={getPlayerName}
               isOverLastBall={isOverLastBall}
               addBall={addBall}
+              isAdmin={isAdmin}
+              loading={loading}
             />
+          </Box>
+        )}
 
+        {innings && (
+          <Box sx={{ px: 2 }}>
             <ScoreTabs
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -696,6 +715,50 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function LiveScoreSummary({
+  innings,
+  overs,
+  target,
+  runsToWin,
+  striker,
+  nonStriker,
+  currentBowler,
+}: any) {
+  return (
+    <Box sx={{ textAlign: "center" }}>
+      <Typography sx={{ fontSize: 42, fontWeight: 950, color: "#0d6bde" }}>
+        {innings.totalRuns}-{innings.wickets}
+      </Typography>
+
+      <Typography sx={{ fontWeight: 800, color: "#64748b" }}>
+        Overs: {overs}
+      </Typography>
+
+      <Typography sx={{ mt: 1, fontWeight: 900 }}>
+        {innings.battingTeam} vs {innings.bowlingTeam}
+      </Typography>
+
+      {innings?.inningNumber === 2 && target && (
+        <Chip
+          label={`Target: ${target} | Need ${runsToWin} runs`}
+          sx={{
+            mt: 1.5,
+            bgcolor: "#fef3c7",
+            color: "#92400e",
+            fontWeight: 900,
+          }}
+        />
+      )}
+
+      <Box sx={{ mt: 2, display: "grid", gap: 1 }}>
+        <InfoRow label="Striker" value={striker} />
+        <InfoRow label="Non-Striker" value={nonStriker} />
+        <InfoRow label="Bowler" value={currentBowler} />
+      </Box>
+    </Box>
+  );
+}
+
 function LiveScorePanel({
   innings,
   overs,
@@ -705,6 +768,8 @@ function LiveScorePanel({
   nonStriker,
   currentBowler,
   endInnings,
+  isAdmin,
+  loading,
 }: any) {
   return (
     <Box sx={{ textAlign: "center" }}>
@@ -738,21 +803,23 @@ function LiveScorePanel({
         <InfoRow label="Bowler" value={currentBowler} />
       </Box>
 
-      <Button
-        onClick={endInnings}
-        variant="contained"
-        sx={{
-          mt: 2,
-          bgcolor: "#dc2626",
-          borderRadius: "999px",
-          fontWeight: 900,
-          textTransform: "none",
-          boxShadow: "none",
-          "&:hover": { bgcolor: "#b91c1c", boxShadow: "none" },
-        }}
-      >
-        End Innings
-      </Button>
+      {isAdmin && !loading && (
+        <Button
+          onClick={endInnings}
+          variant="contained"
+          sx={{
+            mt: 2,
+            bgcolor: "#dc2626",
+            borderRadius: "999px",
+            fontWeight: 900,
+            textTransform: "none",
+            boxShadow: "none",
+            "&:hover": { bgcolor: "#b91c1c", boxShadow: "none" },
+          }}
+        >
+          End Innings
+        </Button>
+      )}
     </Box>
   );
 }
@@ -896,6 +963,8 @@ function ScoringPanel(props: any) {
     getPlayerName,
     isOverLastBall,
     addBall,
+    isAdmin,
+    loading,
   } = props;
 
   return (
@@ -1097,21 +1166,23 @@ function ScoringPanel(props: any) {
             </TextField>
           )}
 
-          <Button
-            onClick={addBall}
-            variant="contained"
-            sx={{
-              height: 48,
-              bgcolor: "#0d6bde",
-              borderRadius: "16px",
-              fontWeight: 900,
-              textTransform: "none",
-              boxShadow: "none",
-              "&:hover": { bgcolor: "#0a58b8", boxShadow: "none" },
-            }}
-          >
-            Add Ball →
-          </Button>
+          {isAdmin && !loading && (
+            <Button
+              onClick={addBall}
+              variant="contained"
+              sx={{
+                height: 48,
+                bgcolor: "#0d6bde",
+                borderRadius: "16px",
+                fontWeight: 900,
+                textTransform: "none",
+                boxShadow: "none",
+                "&:hover": { bgcolor: "#0a58b8", boxShadow: "none" },
+              }}
+            >
+              Add Ball →
+            </Button>
+          )}
         </Box>
       </CardContent>
     </Card>

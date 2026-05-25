@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@mui/material/styles";
+import { useAdmin } from "../hooks/useAdmin";
 
 import {
   Box,
@@ -34,6 +35,7 @@ import AdCard from "../components/AdCard";
 export default function TournamentsPage() {
   const router = useRouter();
   const muiTheme = useTheme();
+  const { isAdmin, loading } = useAdmin();
 
   const [data, setData] = useState<any[]>([]);
   const [statsOpen, setStatsOpen] = useState(false);
@@ -103,22 +105,24 @@ export default function TournamentsPage() {
             Home
           </Button>
 
-          <Button
-            component={Link}
-            href="/tournaments/add"
-            startIcon={<AddRoundedIcon />}
-            variant="contained"
-            sx={{
-              bgcolor: "#16a34a",
-              borderRadius: "999px",
-              fontWeight: 900,
-              textTransform: "none",
-              boxShadow: "none",
-              "&:hover": { bgcolor: "#15803d", boxShadow: "none" },
-            }}
-          >
-            Add
-          </Button>
+          {isAdmin && !loading && (
+            <Button
+              component={Link}
+              href="/tournaments/add"
+              startIcon={<AddRoundedIcon />}
+              variant="contained"
+              sx={{
+                bgcolor: "#16a34a",
+                borderRadius: "999px",
+                fontWeight: 900,
+                textTransform: "none",
+                boxShadow: "none",
+                "&:hover": { bgcolor: "#15803d", boxShadow: "none" },
+              }}
+            >
+              Add
+            </Button>
+          )}
         </Box>
 
         <Box sx={{ px: 2, pt: 2 }}>

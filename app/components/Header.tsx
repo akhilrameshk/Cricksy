@@ -26,13 +26,18 @@ import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import FeedRoundedIcon from "@mui/icons-material/FeedRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
+import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
 
 import { useTheme as useMuiTheme } from "@mui/material/styles";
 import { useTheme } from "../providers";
+import { useAdmin } from "@/app/hooks/useAdmin";
+import AdminLogin from "./AdminLogin";
 
 export default function Header() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
+  const { isAdmin } = useAdmin();
+  const [adminDialogOpen, setAdminDialogOpen] = useState(false);
   const muiTheme = useMuiTheme();
   const [open, setOpen] = useState(false);
 
@@ -213,6 +218,22 @@ export default function Header() {
             })}
           </Box>
 
+          <Tooltip title={isAdmin ? "Admin (Logged in)" : "Admin Login"}>
+            <IconButton
+              onClick={() => setAdminDialogOpen(true)}
+              size="small"
+              sx={{
+                color: "#fff",
+                width: 38,
+                height: 38,
+                bgcolor: isAdmin ? "#10b981" : "rgba(255,255,255,0.14)",
+                "&:hover": { bgcolor: isAdmin ? "#059669" : "rgba(255,255,255,0.22)" },
+              }}
+            >
+              <SecurityRoundedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
           <Tooltip title={`Switch to ${isDark ? "light" : "dark"} mode`}>
             <IconButton
               onClick={toggleTheme}
@@ -327,7 +348,51 @@ export default function Header() {
             );
           })}
         </List>
+
+        <Box sx={{ borderTop: isDark ? "1px solid #1e293b" : "1px solid #e2e8f0", px: 1.5, py: 1.5, display: "flex", gap: 1 }}>
+          <Tooltip title={isAdmin ? "Admin (Logged in)" : "Admin Login"}>
+            <IconButton
+              onClick={() => {
+                setAdminDialogOpen(true);
+                setOpen(false);
+              }}
+              sx={{
+                flex: 1,
+                color: "#fff",
+                bgcolor: isAdmin ? "#10b981" : "#0d6bde",
+                borderRadius: "12px",
+                fontWeight: 900,
+                fontSize: 13,
+                textTransform: "none",
+                "&:hover": { bgcolor: isAdmin ? "#059669" : "#0a58b8" },
+              }}
+            >
+              <SecurityRoundedIcon sx={{ mr: 1 }} />
+              {isAdmin ? "Admin" : "Login"}
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title={`Switch to ${isDark ? "light" : "dark"} mode`}>
+            <IconButton
+              onClick={toggleTheme}
+              sx={{
+                color: "#fff",
+                bgcolor: "#0d6bde",
+                borderRadius: "12px",
+                "&:hover": { bgcolor: "#0a58b8" },
+              }}
+            >
+              {isDark ? (
+                <LightModeRoundedIcon fontSize="small" />
+              ) : (
+                <DarkModeRoundedIcon fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Drawer>
+
+      <AdminLogin open={adminDialogOpen} onClose={() => setAdminDialogOpen(false)} />
     </>
   );
 }

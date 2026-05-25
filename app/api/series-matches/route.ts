@@ -76,7 +76,7 @@ export async function GET() {
       date: todayKey,
       data: matches,
     });
-  } catch (error) {
+  } catch {
     if (fs.existsSync(CACHE_FILE)) {
       const cached = JSON.parse(fs.readFileSync(CACHE_FILE, "utf-8"));
 

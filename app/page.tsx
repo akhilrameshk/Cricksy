@@ -241,7 +241,17 @@ function LiveMatchCard({ match }: any) {
               WebkitBoxOrient: "vertical",
             }}
           >
-            {match?.date ? new Date(match.date).toLocaleString() : "Date TBD"} •{" "}
+         {match?.dateTimeGMT
+  ? `${new Date(match.dateTimeGMT + "Z").toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })} IST`
+  : "TBD"}
           </Typography> 
        
         </Box>
