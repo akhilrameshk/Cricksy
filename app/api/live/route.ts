@@ -9,10 +9,6 @@ function getMatchDate(match: any) {
   return new Date(match.dateTimeGMT || match.date || match.matchDate);
 }
 
-function isSameDay(a: Date, b: Date) {
-  return a.toDateString() === b.toDateString();
-}
-
 function isEnded(match: any) {
   const status = String(match.status || "").toLowerCase();
 
@@ -62,14 +58,12 @@ export async function GET() {
     const json = await res.json();
 
     const allMatches = json.data || [];
-    const today = new Date();
 
     const live = allMatches.filter(isLive);
 
     const todayUpcoming = allMatches
       .filter((match: any) => {
-        const matchDate = getMatchDate(match);
-        return  isUpcoming(match);
+        return isUpcoming(match);
       })
       .sort(
         (a: any, b: any) =>

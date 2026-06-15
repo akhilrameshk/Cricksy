@@ -20,13 +20,23 @@ function hasLineup(match: any) {
     match?.lineupUpdated ||
       match?.hasSquad ||
       match?.playingXI ||
-      match?.teamAPlayingXI ||
-      match?.teamBPlayingXI
+      match?.teamAPlayingXI?.length ||
+      match?.teamBPlayingXI?.length ||
+      match?.teamInfo?.length
   );
 }
 
 function cleanJson(text: string) {
   return text.replace(/```json/g, "").replace(/```/g, "").trim();
+}
+
+function getPlayerName(player: any) {
+  if (typeof player === "string") return player;
+  return player?.name || player?.playerName || player?.shortname || "";
+}
+
+function normalizeName(name: string) {
+  return String(name || "").toLowerCase().trim();
 }
 
 export async function POST(req: Request) {
@@ -50,6 +60,40 @@ export async function POST(req: Request) {
     const tossDone = hasToss(match);
     const lineupDone = hasLineup(match);
 
+    const teamAName =
+      match?.teamInfo?.[0]?.name ||
+      match?.teams?.[0] ||
+      match?.teamA ||
+      "Team A";
+
+    const teamBName =
+      match?.teamInfo?.[1]?.name ||
+      match?.teams?.[1] ||
+      match?.teamB ||
+      "Team B";
+
+    const teamAPlayers = (
+      match?.teamAPlayingXI ||
+      match?.teamAPlayers ||
+      match?.playingXI?.[teamAName] ||
+      match?.squad?.[teamAName] ||
+      []
+    )
+      .map(getPlayerName)
+      .filter(Boolean);
+
+    const teamBPlayers = (
+      match?.teamBPlayingXI ||
+      match?.teamBPlayers ||
+      match?.playingXI?.[teamBName] ||
+      match?.squad?.[teamBName] ||
+      []
+    )
+      .map(getPlayerName)
+      .filter(Boolean);
+
+    const allowedPlayers = [...teamAPlayers, ...teamBPlayers];
+
     if (isSecondInnings && (!tossDone || !lineupDone)) {
       return Response.json(
         {
@@ -57,12 +101,6 @@ export async function POST(req: Request) {
           locked: true,
           message:
             "Second innings fantasy team can be created only after toss and lineup are available.",
-          requirements: {
-            tossDone,
-            lineupDone,
-            secondBattingTeam: Boolean(secondBattingTeam),
-            secondBowlingTeam: Boolean(secondBowlingTeam),
-          },
         },
         { status: 400 }
       );
@@ -80,6 +118,19 @@ export async function POST(req: Request) {
       );
     }
 
+    if (isSecondInnings && !allowedPlayers.length) {
+      return Response.json(
+        {
+          success: false,
+          message:
+            "No lineup players available. Please update playing XI before generating second innings team.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const hasAllowedPlayers = allowedPlayers.length > 0;
+
     const prompt = `
 You are a fantasy cricket analyst.
 
@@ -89,12 +140,40 @@ Important:
 - Suggestions only. No winning guarantee.
 - Do not mention betting or gambling.
 - Return valid JSON only.
-- Use recent performance, toss, pitch and lineup data if provided.
+- Use recent scorecards, batting form, wickets, economy, all-round impact and venue if available.
+
+${
+  hasAllowedPlayers
+    ? `
+Allowed players:
+${JSON.stringify(
+  {
+    [teamAName]: teamAPlayers,
+    [teamBName]: teamBPlayers,
+  },
+  null,
+  2
+)}
+
+STRICT:
+- Select players ONLY from the allowed players list.
+- Do NOT use memory or old squads.
+- Do NOT include any player outside the allowed list.
+`
+    : `
+No confirmed squad/lineup available.
+PRE-TOSS RULE:
+- Create teams using likely players only from these two teams:
+  ${teamAName}
+  ${teamBName}
+- Clearly mention this is a pre-toss suggestion and may change after lineup.
+`
+}
 
 Match:
 ${JSON.stringify(match, null, 2)}
 
-Recent performance:
+Recent scorecards and performance:
 ${JSON.stringify(recentPerformance || {}, null, 2)}
 
 Mode:
@@ -107,24 +186,44 @@ SECOND INNINGS MODE:
 - Players must be selected only from:
   1. Second batting team: ${secondBattingTeam}
   2. Second bowling team: ${secondBowlingTeam}
-- Use batters/all-rounders from second batting team.
-- Use bowlers/all-rounders from second bowling team.
-- Do not include any other team player.
 `
     : tossDone && lineupDone
     ? `
 FULL MATCH FINAL TEAM MODE:
 - Toss and lineup are available.
-- Create exactly 5 updated final teams.
+- Create exactly 5 final teams.
 - Each team must have exactly 11 players.
-- Use actual lineup and recent stats.
+- Use actual player names only from allowed players.
 `
     : `
 FULL MATCH PRE-TOSS MODE:
-- Toss or lineup is not available.
-- Create exactly 5 dummy/pre-toss teams.
-- Each team must have exactly 11 players if possible.
-- Clearly mention this is pre-toss dummy suggestion.
+- Toss and lineup are not available.
+- Create exactly 5 pre-toss teams.
+- DO NOT return player names.
+- DO NOT guess player names.
+- Return only role/team structure.
+- Use actual team names in brackets.
+
+For each team:
+- captainRole must be like: "Opening Batter (${teamAName})"
+- viceCaptainRole must be like: "All Rounder (${teamBName})"
+- wk, bat, ar, bowl must total 11.
+- teamACount and teamBCount must total 11.
+
+Return this structure only:
+{
+  "teamName": "Safe Team",
+  "risk": "Safe",
+  "captainRole": "Opening Batter (${teamAName})",
+  "viceCaptainRole": "All Rounder (${teamBName})",
+  "wk": 1,
+  "bat": 4,
+  "ar": 3,
+  "bowl": 3,
+  "teamACount": 6,
+  "teamBCount": 5,
+  "reason": "Balanced pre-toss combination"
+}
 `
 }
 
@@ -155,23 +254,37 @@ Return JSON only:
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
-      temperature: isSecondInnings ? 0.4 : 0.6,
+      temperature: isSecondInnings ? 0.35 : 0.55,
     });
 
     const text = completion.choices[0]?.message?.content || "{}";
     const parsed = JSON.parse(cleanJson(text));
 
-    if (isSecondInnings) {
-      parsed.teams = (parsed.teams || []).map((team: any) => ({
-        ...team,
-        players: (team.players || []).slice(0, 5),
-      }));
-    }
+    if (hasAllowedPlayers) {
+      const allowedSet = new Set(allowedPlayers.map(normalizeName));
 
-    if (!isSecondInnings) {
+      parsed.teams = (parsed.teams || []).map((team: any) => {
+        const filteredPlayers = (team.players || []).filter((player: string) =>
+          allowedSet.has(normalizeName(player))
+        );
+
+        const limit = isSecondInnings ? 5 : 11;
+
+        return {
+          ...team,
+          players: filteredPlayers.slice(0, limit),
+          captain: allowedSet.has(normalizeName(team.captain))
+            ? team.captain
+            : filteredPlayers[0] || "",
+          viceCaptain: allowedSet.has(normalizeName(team.viceCaptain))
+            ? team.viceCaptain
+            : filteredPlayers[1] || "",
+        };
+      });
+    } else {
       parsed.teams = (parsed.teams || []).map((team: any) => ({
         ...team,
-        players: (team.players || []).slice(0, 11),
+        players: (team.players || []).slice(0, isSecondInnings ? 5 : 11),
       }));
     }
 

@@ -37,14 +37,15 @@ export default function FantasyDetailPage() {
   const [selectedOption, setSelectedOption] = useState<
     "dream11" | "second-innings" | ""
   >("");
-const [tossInfo, setTossInfo] = useState<any>(null);
-const [lineupInfo, setLineupInfo] = useState<any>(null);
-const [checkingToss, setCheckingToss] = useState(false);
-const [checkingLineup, setCheckingLineup] = useState(false);
 
-const tossDone = tossInfo?.available === true;
-const lineupDone = lineupInfo?.available === true;
-const canGenerateFinal = tossDone && lineupDone;
+  const [tossInfo, setTossInfo] = useState<any>(null);
+  const [lineupInfo, setLineupInfo] = useState<any>(null);
+  const [checkingToss, setCheckingToss] = useState(false);
+  const [checkingLineup, setCheckingLineup] = useState(false);
+
+  const tossDone = tossInfo?.available === true;
+  const lineupDone = lineupInfo?.available === true;
+
   useEffect(() => {
     fetch(`/api/fantasy-match?id=${id}`)
       .then((res) => res.json())
@@ -53,18 +54,20 @@ const canGenerateFinal = tossDone && lineupDone;
   }, [id]);
 
   const hasToss = Boolean(
-    match?.tossWinner ||
+    tossDone ||
+      match?.tossWinner ||
       match?.tossChoice ||
       match?.toss ||
       String(match?.status || "").toLowerCase().includes("won the toss")
   );
 
   const hasLineup = Boolean(
-    match?.lineupUpdated ||
+    lineupDone ||
+      match?.lineupUpdated ||
       match?.hasSquad ||
       match?.playingXI ||
-      match?.teamAPlayingXI ||
-      match?.teamBPlayingXI
+      match?.teamAPlayingXI?.length ||
+      match?.teamBPlayingXI?.length
   );
 
   const canCreateSecondInnings = hasToss && hasLineup;
@@ -78,94 +81,137 @@ const canGenerateFinal = tossDone && lineupDone;
   setSuggestion(null);
   setLockedMessage("");
 
-  if (!canGenerateFinal) {
+  // Only second innings needs toss + lineup
+  if (option === "second-innings" && !canCreateSecondInnings) {
     setLockedMessage(
-      "Please check toss and lineup first. Final fantasy team can be generated only after both are available."
+      "Second innings team can be generated only after toss and lineup are available."
     );
     return;
   }
 
   setLoadingAI(true);
 
-  const res = await fetch("/api/fantasy-suggestion", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      match,
-      option,
-      tossInfo,
-      lineupInfo,
-      secondBattingTeam: tossInfo?.secondBattingTeam,
-      secondBowlingTeam: tossInfo?.secondBowlingTeam,
-    }),
-  });
+  try {
+    const analysisRes = await fetch("/api/fantasy-analysis", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        match,
+        limit: 5,
+      }),
+    });
 
-  const json = await res.json();
+    const analysisJson = await analysisRes.json();
 
-  if (json.success) {
-    setSuggestion(json.data);
-  } else {
-    setLockedMessage(json.message || "Failed to generate fantasy suggestion");
+    const res = await fetch("/api/fantasy-suggestion", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        match,
+        option,
+        tossInfo,
+        lineupInfo,
+        recentPerformance: analysisJson?.data || null,
+
+        // Needed only for second innings
+        secondBattingTeam:
+          option === "second-innings"
+            ? tossInfo?.secondBattingTeam ||
+              tossInfo?.secondInningsBattingTeam ||
+              match?.teams?.[1]
+            : undefined,
+
+        secondBowlingTeam:
+          option === "second-innings"
+            ? tossInfo?.secondBowlingTeam ||
+              tossInfo?.secondInningsBowlingTeam ||
+              match?.teams?.[0]
+            : undefined,
+      }),
+    });
+
+    const json = await res.json();
+
+    if (json.success) {
+      setSuggestion(json.data);
+    } else {
+      setLockedMessage(
+        json.message || "Failed to generate fantasy suggestion"
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    setLockedMessage("Failed to generate fantasy suggestion");
   }
 
   setLoadingAI(false);
 };
 
   const checkToss = async () => {
-  if (!match) return;
+    if (!match) return;
 
-  setCheckingToss(true);
+    setCheckingToss(true);
 
-  const res = await fetch("/api/fantasy-check", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      match,
-      type: "toss",
-    }),
-  });
+    try {
+      const res = await fetch("/api/fantasy-check", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          match,
+          type: "toss",
+        }),
+      });
 
-  const json = await res.json();
+      const json = await res.json();
 
-  if (json.success) {
-    setTossInfo(json.data);
-  } else {
-    alert(json.message || "Failed to check toss");
-  }
+      if (json.success) {
+        setTossInfo(json.data);
+      } else {
+        alert(json.message || "Failed to check toss");
+      }
+    } catch {
+      alert("Failed to check toss");
+    }
 
-  setCheckingToss(false);
-};
+    setCheckingToss(false);
+  };
 
-const checkLineup = async () => {
-  if (!match) return;
+  const checkLineup = async () => {
+    if (!match) return;
 
-  setCheckingLineup(true);
+    setCheckingLineup(true);
 
-  const res = await fetch("/api/fantasy-check", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      match,
-      type: "lineup",
-    }),
-  });
+    try {
+      const res = await fetch("/api/fantasy-check", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          match,
+          type: "lineup",
+        }),
+      });
 
-  const json = await res.json();
+      const json = await res.json();
 
-  if (json.success) {
-    setLineupInfo(json.data);
-  } else {
-    alert(json.message || "Failed to check lineup");
-  }
+      if (json.success) {
+        setLineupInfo(json.data);
+      } else {
+        alert(json.message || "Failed to check lineup");
+      }
+    } catch {
+      alert("Failed to check lineup");
+    }
 
-  setCheckingLineup(false);
-};
+    setCheckingLineup(false);
+  };
 
   const teamA =
     match?.teamInfo?.[0]?.shortname || match?.teams?.[0] || "Team A";
@@ -239,14 +285,7 @@ const checkLineup = async () => {
                   {match.name}
                 </Typography>
 
-                <Box
-                  sx={{
-                    mt: 1.5,
-                    display: "flex",
-                    gap: 1,
-                    flexWrap: "wrap",
-                  }}
-                >
+                <Box sx={{ mt: 1.5, display: "flex", gap: 1, flexWrap: "wrap" }}>
                   <Chip
                     label={match.matchType?.toUpperCase() || "T20"}
                     size="small"
@@ -286,7 +325,18 @@ const checkLineup = async () => {
                   label="Date"
                   value={
                     match.dateTimeGMT
-                      ? new Date(match.dateTimeGMT).toLocaleString()
+                      ? `${new Date(match.dateTimeGMT + "Z").toLocaleString(
+                          "en-IN",
+                          {
+                            timeZone: "Asia/Kolkata",
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          }
+                        )} IST`
                       : "Date TBD"
                   }
                 />
@@ -318,72 +368,81 @@ const checkLineup = async () => {
                 </Typography>
 
                 <Typography sx={{ mt: 0.5, fontSize: 13, color: "#64748b" }}>
-                  Normal team can be created before toss as dummy/pre-toss. It
-                  will improve after toss and lineup are updated.
+                  Teams are generated using allowed squad/lineup and recent
+                  scorecard performance.
                 </Typography>
-{tossInfo && (
-  <InfoBox
-    label="Toss Check"
-    value={
-      tossInfo.available
-        ? tossInfo.summary
-        : "Toss not available yet"
-    }
-  />
-)}
 
-{lineupInfo && (
-  <InfoBox
-    label="Lineup Check"
-    value={
-      lineupInfo.available
-        ? lineupInfo.summary
-        : "Lineup not available yet"
-    }
-  />
-)}
+                {tossInfo && (
+                  <InfoBox
+                    label="Toss Check"
+                    value={
+                      tossInfo.available
+                        ? tossInfo.summary
+                        : "Toss not available yet"
+                    }
+                  />
+                )}
+
+                {lineupInfo && (
+                  <InfoBox
+                    label="Lineup Check"
+                    value={
+                      lineupInfo.available
+                        ? lineupInfo.summary
+                        : "Lineup not available yet"
+                    }
+                  />
+                )}
+
                 <Box sx={{ mt: 2, display: "grid", gap: 1.5 }}>
-                  <Box sx={{ mt: 2, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
-  <Button
-    fullWidth
-    onClick={checkToss}
-    variant="contained"
-    sx={{
-      height: 46,
-      bgcolor: tossDone ? "#16a34a" : "#0d6bde",
-      borderRadius: "16px",
-      fontWeight: 900,
-      textTransform: "none",
-      boxShadow: "none",
-    }}
-  >
-    {checkingToss
-      ? "Checking..."
-      : tossDone
-      ? "Toss Available"
-      : "Check Toss"}
-  </Button>
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 1,
+                    }}
+                  >
+                    <Button
+                      fullWidth
+                      onClick={checkToss}
+                      variant="contained"
+                      sx={{
+                        height: 46,
+                        bgcolor: tossDone ? "#16a34a" : "#0d6bde",
+                        borderRadius: "16px",
+                        fontWeight: 900,
+                        textTransform: "none",
+                        boxShadow: "none",
+                      }}
+                    >
+                      {checkingToss
+                        ? "Checking..."
+                        : tossDone
+                        ? "Toss Available"
+                        : "Check Toss"}
+                    </Button>
 
-  <Button
-    fullWidth
-    onClick={checkLineup}
-    variant="contained"
-    sx={{
-      height: 46,
-      bgcolor: lineupDone ? "#16a34a" : "#0d6bde",
-      borderRadius: "16px",
-      fontWeight: 900,
-      textTransform: "none",
-      boxShadow: "none",
-    }}
-  >
-    {checkingLineup
-      ? "Checking..."
-      : lineupDone
-      ? "Lineup Available"
-      : "Check Lineup"}
-  </Button>
-</Box>
+                    <Button
+                      fullWidth
+                      onClick={checkLineup}
+                      variant="contained"
+                      sx={{
+                        height: 46,
+                        bgcolor: lineupDone ? "#16a34a" : "#0d6bde",
+                        borderRadius: "16px",
+                        fontWeight: 900,
+                        textTransform: "none",
+                        boxShadow: "none",
+                      }}
+                    >
+                      {checkingLineup
+                        ? "Checking..."
+                        : lineupDone
+                        ? "Lineup Available"
+                        : "Check Lineup"}
+                    </Button>
+                  </Box>
+
                   <Button
                     fullWidth
                     startIcon={<AutoAwesomeRoundedIcon />}
@@ -401,44 +460,44 @@ const checkLineup = async () => {
                   >
                     {hasToss && hasLineup
                       ? "Dream11 Final Teams"
-                      : "Dream11 Pre-Toss Dummy Teams"}
+                      : "Dream11 Pre-Toss Teams"}
                   </Button>
 
-                 <Button
-  fullWidth
-  startIcon={
-    canCreateSecondInnings ? (
-      <BoltRoundedIcon />
-    ) : (
-      <LockRoundedIcon />
-    )
-  }
-  onClick={() => generateSuggestion("second-innings")}
-  variant="contained"
-  sx={{
-    height: 52,
-    bgcolor:
-      selectedOption === "second-innings"
-        ? "#15803d"
-        : "#16a34a",
-    borderRadius: "18px",
-    fontWeight: 950,
-    textTransform: "none",
-    boxShadow: "none",
-    opacity: canCreateSecondInnings ? 1 : 0.85,
-    "&:hover": {
-      bgcolor:
-        selectedOption === "second-innings"
-          ? "#166534"
-          : "#15803d",
-      boxShadow: "none",
-    },
-  }}
->
-  {canCreateSecondInnings
-    ? "Second Innings 5-Player Teams"
-    : "Second Innings Team Locked"}
-</Button>
+                  <Button
+                    fullWidth
+                    startIcon={
+                      canCreateSecondInnings ? (
+                        <BoltRoundedIcon />
+                      ) : (
+                        <LockRoundedIcon />
+                      )
+                    }
+                    onClick={() => generateSuggestion("second-innings")}
+                    variant="contained"
+                    sx={{
+                      height: 52,
+                      bgcolor:
+                        selectedOption === "second-innings"
+                          ? "#15803d"
+                          : "#16a34a",
+                      borderRadius: "18px",
+                      fontWeight: 950,
+                      textTransform: "none",
+                      boxShadow: "none",
+                      opacity: canCreateSecondInnings ? 1 : 0.85,
+                      "&:hover": {
+                        bgcolor:
+                          selectedOption === "second-innings"
+                            ? "#166534"
+                            : "#15803d",
+                        boxShadow: "none",
+                      },
+                    }}
+                  >
+                    {canCreateSecondInnings
+                      ? "Second Innings 5-Player Teams"
+                      : "Second Innings Team Locked"}
+                  </Button>
                 </Box>
 
                 <Box
@@ -460,7 +519,7 @@ const checkLineup = async () => {
                     }}
                   >
                     {canCreateSecondInnings
-                      ? `Second innings teams will use ${teamB} batters/all-rounders and ${teamA} bowlers/all-rounders only.`
+                      ? `Second innings teams will use selected second innings batting and bowling teams only.`
                       : "Second innings team is locked until toss and lineup are available."}
                   </Typography>
                 </Box>
@@ -477,7 +536,9 @@ const checkLineup = async () => {
                 }}
               >
                 <CardContent sx={{ p: 2 }}>
-                  <Typography sx={{ fontSize: 13, fontWeight: 900, color: "#9a3412" }}>
+                  <Typography
+                    sx={{ fontSize: 13, fontWeight: 900, color: "#9a3412" }}
+                  >
                     {lockedMessage}
                   </Typography>
                 </CardContent>
@@ -495,7 +556,7 @@ const checkLineup = async () => {
               >
                 <CircularProgress sx={{ color: "#0d6bde" }} />
                 <Typography sx={{ mt: 2, fontWeight: 900 }}>
-                  Generating fantasy teams...
+                  Analyzing recent scorecards and generating teams...
                 </Typography>
               </Card>
             )}
@@ -516,7 +577,7 @@ function InfoBox({ label, value }: { label: string; value: string }) {
   return (
     <Box
       sx={{
-        mb: 1.2,
+        mt: 1.2,
         borderRadius: "16px",
         bgcolor: "#f8fafc",
         border: "1px solid #e2e8f0",
@@ -533,6 +594,7 @@ function InfoBox({ label, value }: { label: string; value: string }) {
           fontSize: 14,
           fontWeight: 850,
           color: "#0f172a",
+          lineHeight: 1.5,
         }}
       >
         {value}
@@ -612,16 +674,7 @@ function SuggestionResult({ suggestion }: { suggestion: any }) {
               <CaptainBox label="Vice Captain" value={team.viceCaptain} />
             </Box>
 
-            {team.players ? (
-              <PlayerGroup title="Players" players={team.players} />
-            ) : (
-              <>
-                <PlayerGroup title="WK" players={team.wicketKeeper} />
-                <PlayerGroup title="Batters" players={team.batters} />
-                <PlayerGroup title="All Rounders" players={team.allRounders} />
-                <PlayerGroup title="Bowlers" players={team.bowlers} />
-              </>
-            )}
+            <PlayerGroup title="Players" players={team.players || []} />
 
             <Box
               sx={{
@@ -632,7 +685,9 @@ function SuggestionResult({ suggestion }: { suggestion: any }) {
                 p: 1.5,
               }}
             >
-              <Typography sx={{ fontSize: 13, fontWeight: 800, color: "#334155" }}>
+              <Typography
+                sx={{ fontSize: 13, fontWeight: 800, color: "#334155" }}
+              >
                 {team.reason}
               </Typography>
             </Box>
@@ -694,7 +749,7 @@ function PlayerGroup({ title, players }: { title: string; players?: string[] }) 
                 fontWeight: 800,
               }}
             />
-          )) 
+          ))
         )}
       </Box>
     </Box>

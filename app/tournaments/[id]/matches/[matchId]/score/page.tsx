@@ -864,10 +864,9 @@ function StartInningsPanel(props: any) {
         value={battingTeam}
         onChange={(e) => handleBattingTeamChange(e.target.value)}
         fullWidth
+        disabled={inningsList.length > 1}
       >
         {inningsList.length === 1 ? (
-          <MenuItem value={nextBattingTeam}>{nextBattingTeam}</MenuItem>
-        ) : (
           [
             <MenuItem key={match.teamA} value={match.teamA}>
               {match.teamA}
@@ -876,6 +875,8 @@ function StartInningsPanel(props: any) {
               {match.teamB}
             </MenuItem>,
           ]
+        ) : (
+          <MenuItem value={nextBattingTeam}>{nextBattingTeam}</MenuItem>
         )}
       </TextField>
 

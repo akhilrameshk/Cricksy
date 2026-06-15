@@ -1,89 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Box, Tooltip, IconButton } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useTheme } from "../providers";
 
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import SportsCricketRoundedIcon from "@mui/icons-material/SportsCricketRounded";
-import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
-import FeedRoundedIcon from "@mui/icons-material/FeedRounded";
-import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
-
 export default function Footer() {
-  const pathname = usePathname();
   const { theme } = useTheme();
-
   const isDark = theme === "dark";
-
-  const links = [
-    { href: "/", label: "Home", icon: <HomeRoundedIcon /> },
-    { href: "/matches", label: "Matches", icon: <SportsCricketRoundedIcon /> },
-    { href: "/tournaments", label: "Series", icon: <EmojiEventsRoundedIcon /> },
-    { href: "/fantasy", label: "Fantasy", icon: <AutoAwesomeRoundedIcon /> },
-    { href: "/news", label: "News", icon: <FeedRoundedIcon /> },
-  ];
 
   return (
     <Box
-      component="footer"
+      component="div"
       sx={{
-        position: "fixed",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 999999,
-        height: "56px",
         width: "100%",
-        px: "38px",
-        bgcolor: isDark ? "#000000" : "#0d6bde",
-        borderTop: isDark ? "1px solid #1e293b" : "1px solid #0a58b8",
-        boxShadow: "0 -4px 12px rgba(0,0,0,0.08)",
+        py: 4,
+        pb: "80px", // Extra padding so content isn't blocked by your 56px fixed footer
+        textAlign: "center",
+        bgcolor: isDark ? "#0a0a0a" : "#f8fafc",
+        borderTop: isDark ? "1px solid #1e293b" : "1px solid #e2e8f0",
       }}
     >
-      <Box
-        sx={{
-          mx: "auto",
-          height: "100%",
-          maxWidth: 448,
-          display: "grid",
-          gridTemplateColumns: "repeat(5, 1fr)",
-          alignItems: "center",
-        }}
-      >
-        {links.map((link) => {
-          const active = pathname === link.href;
-
-          return (
-            <Tooltip key={link.href} title={link.label} arrow>
-              <IconButton
-                component={Link}
-                href={link.href}
-                sx={{
-                  mx: "auto",
-                  width: 42,
-                  height: 42,
-                  color: active ? "#ffffff" : "rgba(255,255,255,0.72)",
-                  bgcolor: active
-                    ? isDark
-                      ? "#1e293b"
-                      : "rgba(255,255,255,0.16)"
-                    : "transparent",
-                  transition: "0.2s ease",
-                  "&:hover": {
-                    bgcolor: isDark
-                      ? "rgba(255,255,255,0.12)"
-                      : "rgba(255,255,255,0.22)",
-                    color: "#fff",
-                  },
-                }}
-              >
-                {link.icon}
-              </IconButton>
-            </Tooltip>
-          );
-        })}
+      <Typography variant="body2" color={isDark ? "rgba(255,255,255,0.6)" : "text.secondary"} sx={{ mb: 1 }}>
+        &copy; {new Date().getFullYear()} Cricksy. All rights reserved.
+      </Typography>
+      <Box sx={{ display: "flex", justifyContent: "center", gap: 3 }}>
+        <Link href="/privacy-policy" style={{ color: isDark ? "#38bdf8" : "#0d6bde", fontSize: "14px", textDecoration: "none" }}>
+          Privacy Policy
+        </Link>
+        <Link href="/terms" style={{ color: isDark ? "#38bdf8" : "#0d6bde", fontSize: "14px", textDecoration: "none" }}>
+          Terms & Conditions
+        </Link>
       </Box>
     </Box>
   );
