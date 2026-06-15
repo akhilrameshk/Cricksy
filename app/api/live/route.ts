@@ -51,7 +51,7 @@ export async function GET() {
     }
 
     const res = await fetch(
-      `${process.env.CRIC_API_URL}/series?apikey=${process.env.CRIC_API_KEY}&offset=0`,
+      `${process.env.CRIC_API_URL}/currentMatches?apikey=${process.env.CRIC_API_KEY}&offset=0`,
       { cache: "no-store" }
     );
 

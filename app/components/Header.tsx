@@ -19,7 +19,6 @@ import {
 
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import SportsCricketRoundedIcon from "@mui/icons-material/SportsCricketRounded";
 import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
@@ -43,8 +42,8 @@ export default function Header() {
 
   const isDark = theme === "dark";
 
+  // "Home" link removed as requested since the Logo component acts as the homepage redirect
   const links = [
-    { href: "/", label: "Home", icon: <HomeRoundedIcon /> },
     { href: "/matches", label: "Matches", icon: <SportsCricketRoundedIcon /> },
     { href: "/tournaments", label: "Series", icon: <EmojiEventsRoundedIcon /> },
     { href: "/fantasy", label: "Fantasy", icon: <AutoAwesomeRoundedIcon /> },
@@ -100,28 +99,28 @@ export default function Header() {
                 opacity: 0.9,
               }}
             />
-<Typography
-  component="span"
-  sx={{
-    position: "relative",
-    zIndex: 2,
-    fontSize: 28,
-    fontWeight: 700,
-    fontStyle: "italic",
-    background:
-      theme === "dark"
-        ? "linear-gradient(180deg, #000000 0%, #111827 45%, #1e293b 100%)"
-        : "linear-gradient(180deg, #1d4ed8 0%, #0d6bde 45%, #2563eb 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    textShadow:
-      theme === "dark"
-        ? "0 1px 4px rgba(0,0,0,0.45)"
-        : "0 1px 2px rgba(13,107,222,0.28)",
-  }}
->
-  ck
-</Typography>
+            <Typography
+              component="span"
+              sx={{
+                position: "relative",
+                zIndex: 2,
+                fontSize: 28,
+                fontWeight: 700,
+                fontStyle: "italic",
+                background:
+                  theme === "dark"
+                    ? "linear-gradient(180deg, #000000 0%, #111827 45%, #1e293b 100%)"
+                    : "linear-gradient(180deg, #1d4ed8 0%, #0d6bde 45%, #2563eb 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                textShadow:
+                  theme === "dark"
+                    ? "0 1px 4px rgba(0,0,0,0.45)"
+                    : "0 1px 2px rgba(13,107,222,0.28)",
+              }}
+            >
+              ck
+            </Typography>
           </Box>
           sy
         </Typography>
@@ -159,6 +158,7 @@ export default function Header() {
             justifyContent: "space-between",
           }}
         >
+          {/* Mobile Shell Menu Trigger */}
           <Box
             sx={{
               display: { xs: "flex", lg: "none" },
@@ -177,6 +177,7 @@ export default function Header() {
             <Logo />
           </Box>
 
+          {/* Desktop Logo Wrapper */}
           <Box
             sx={{
               display: { xs: "none", lg: "flex" },
@@ -186,76 +187,96 @@ export default function Header() {
             <Logo />
           </Box>
 
+          {/* Desktop Right Actions Container */}
           <Box
             sx={{
-              display: { xs: "none", lg: "flex" },
+              display: "flex",
               alignItems: "center",
-              gap: 3.5,
+              gap: { lg: 4, xl: 5 },
             }}
           >
-            {links.map((link) => {
-              const active = pathname === link.href;
+            {/* Desktop Navigation Links */}
+            <Box
+              sx={{
+                display: { xs: "none", lg: "flex" },
+                alignItems: "center",
+                gap: 3.5,
+              }}
+            >
+              {links.map((link) => {
+                const active = pathname === link.href;
 
-              return (
-                <Link key={link.href} href={link.href} className="no-underline">
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.75,
-                      color: active ? "#fff" : "rgba(255,255,255,0.78)",
-                      fontSize: 14,
-                      fontWeight: 900,
-                      transition: "0.2s",
-                      "&:hover": { color: "#fff" },
-                    }}
-                  >
-                    {link.icon}
-                    {link.label}
-                  </Box>
-                </Link>
-              );
-            })}
+                return (
+                  <Link key={link.href} href={link.href} className="no-underline">
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.75,
+                        color: active ? "#fff" : "rgba(255,255,255,0.78)",
+                        fontSize: 14,
+                        fontWeight: 900,
+                        transition: "0.2s",
+                        "&:hover": { color: "#fff" },
+                      }}
+                    >
+                      {link.icon}
+                      {link.label}
+                    </Box>
+                  </Link>
+                );
+              })}
+            </Box>
+
+            {/* Desktop Only Action Controls (Theme and Login hidden on mobile header view) */}
+            <Box
+              sx={{
+                display: { xs: "none", lg: "flex" },
+                alignItems: "center",
+                gap: 1.5,
+              }}
+            >
+              <Tooltip title={isAdmin ? "Admin (Logged in)" : "Admin Login"}>
+                <IconButton
+                  onClick={() => setAdminDialogOpen(true)}
+                  size="small"
+                  sx={{
+                    color: "#fff",
+                    width: 38,
+                    height: 38,
+                    bgcolor: isAdmin ? "#10b981" : "rgba(255,255,255,0.14)",
+                    "&:hover": { bgcolor: isAdmin ? "#059669" : "rgba(255,255,255,0.22)" },
+                  }}
+                >
+                  <SecurityRoundedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title={`Switch to ${isDark ? "light" : "dark"} mode`}>
+                <IconButton
+                  onClick={toggleTheme}
+                  size="small"
+                  sx={{
+                    color: "#fff",
+                    width: 38,
+                    height: 38,
+                    bgcolor: "rgba(255,255,255,0.14)",
+                    "&:hover": { bgcolor: "rgba(255,255,255,0.22)" },
+                  }}
+                >
+                  {isDark ? (
+                    <LightModeRoundedIcon fontSize="small" />
+                  ) : (
+                    <DarkModeRoundedIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </Tooltip>
+            </Box>
           </Box>
-
-          <Tooltip title={isAdmin ? "Admin (Logged in)" : "Admin Login"}>
-            <IconButton
-              onClick={() => setAdminDialogOpen(true)}
-              size="small"
-              sx={{
-                color: "#fff",
-                width: 38,
-                height: 38,
-                bgcolor: isAdmin ? "#10b981" : "rgba(255,255,255,0.14)",
-                "&:hover": { bgcolor: isAdmin ? "#059669" : "rgba(255,255,255,0.22)" },
-              }}
-            >
-              <SecurityRoundedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title={`Switch to ${isDark ? "light" : "dark"} mode`}>
-            <IconButton
-              onClick={toggleTheme}
-              size="small"
-              sx={{
-                color: "#fff",
-                width: 38,
-                height: 38,
-                bgcolor: "rgba(255,255,255,0.14)",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.22)" },
-              }}
-            >
-              {isDark ? (
-                <LightModeRoundedIcon fontSize="small" />
-              ) : (
-                <DarkModeRoundedIcon fontSize="small" />
-              )}
-            </IconButton>
-          </Tooltip>
         </Box>
       </Box>
 
+      {/* Mobile Side Drawer Container */}
       <Drawer
         anchor="left"
         open={open}
@@ -349,6 +370,7 @@ export default function Header() {
           })}
         </List>
 
+        {/* Action Controls Footer Component Inside Mobile Menu */}
         <Box sx={{ borderTop: isDark ? "1px solid #1e293b" : "1px solid #e2e8f0", px: 1.5, py: 1.5, display: "flex", gap: 1 }}>
           <Tooltip title={isAdmin ? "Admin (Logged in)" : "Admin Login"}>
             <IconButton
