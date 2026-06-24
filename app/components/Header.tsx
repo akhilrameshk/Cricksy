@@ -15,6 +15,7 @@ import {
   ListItemText,
   Tooltip,
   Typography,
+  Button,
 } from "@mui/material";
 
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
@@ -26,6 +27,8 @@ import FeedRoundedIcon from "@mui/icons-material/FeedRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
+import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
+import AlternateEmailRoundedIcon from "@mui/icons-material/AlternateEmailRounded";
 
 import { useTheme as useMuiTheme } from "@mui/material/styles";
 import { useTheme } from "../providers";
@@ -42,12 +45,19 @@ export default function Header() {
 
   const isDark = theme === "dark";
 
-  // "Home" link removed as requested since the Logo component acts as the homepage redirect
+  // Core desktop nav structure (omitting utility footer paths to keep top header clean)
   const links = [
     { href: "/matches", label: "Matches", icon: <SportsCricketRoundedIcon /> },
     { href: "/tournaments", label: "Series", icon: <EmojiEventsRoundedIcon /> },
     { href: "/fantasy", label: "Fantasy", icon: <AutoAwesomeRoundedIcon /> },
     { href: "/news", label: "News", icon: <FeedRoundedIcon /> },
+  ];
+
+  // Comprehensive route list mapped inside the mobile side menu drawer navigation
+  const mobileDrawerLinks = [
+    ...links,
+    { href: "/about", label: "About Us", icon: <InfoRoundedIcon /> },
+    { href: "/contact", label: "Contact Us", icon: <AlternateEmailRoundedIcon /> },
   ];
 
   const Logo = () => (
@@ -228,7 +238,7 @@ export default function Header() {
               })}
             </Box>
 
-            {/* Desktop Only Action Controls (Theme and Login hidden on mobile header view) */}
+            {/* Desktop Only Action Controls */}
             <Box
               sx={{
                 display: { xs: "none", lg: "flex" },
@@ -315,8 +325,9 @@ export default function Header() {
           </IconButton>
         </Box>
 
+        {/* Updated List mapping out Core Features, About, and Contact pages seamlessly */}
         <List sx={{ p: 1.5 }}>
-          {links.map((link) => {
+          {mobileDrawerLinks.map((link) => {
             const active = pathname === link.href;
 
             return (
@@ -326,7 +337,7 @@ export default function Header() {
                 href={link.href}
                 onClick={() => setOpen(false)}
                 sx={{
-                  mb: 1,
+                  mb: 0.5,
                   borderRadius: "16px",
                   bgcolor: active
                     ? isDark
@@ -348,7 +359,7 @@ export default function Header() {
                 <ListItemIcon
                   sx={{
                     minWidth: 42,
-                    color: active ? "#fff" : isDark ? "#93c5fd" : "#0d6bde",
+                    color: active ? "#fff" : isDark ? "#38bdf8" : "#0d6bde",
                   }}
                 >
                   {link.icon}
@@ -359,8 +370,8 @@ export default function Header() {
                   slotProps={{
                     primary: {
                       sx: {
-                        fontSize: 15,
-                        fontWeight: 900,
+                        fontSize: 14.5,
+                        fontWeight: 800,
                       },
                     },
                   }}
@@ -370,29 +381,30 @@ export default function Header() {
           })}
         </List>
 
-        {/* Action Controls Footer Component Inside Mobile Menu */}
-        <Box sx={{ borderTop: isDark ? "1px solid #1e293b" : "1px solid #e2e8f0", px: 1.5, py: 1.5, display: "flex", gap: 1 }}>
-          <Tooltip title={isAdmin ? "Admin (Logged in)" : "Admin Login"}>
-            <IconButton
-              onClick={() => {
-                setAdminDialogOpen(true);
-                setOpen(false);
-              }}
-              sx={{
-                flex: 1,
-                color: "#fff",
-                bgcolor: isAdmin ? "#10b981" : "#0d6bde",
-                borderRadius: "12px",
-                fontWeight: 900,
-                fontSize: 13,
-                textTransform: "none",
-                "&:hover": { bgcolor: isAdmin ? "#059669" : "#0a58b8" },
-              }}
-            >
-              <SecurityRoundedIcon sx={{ mr: 1 }} />
-              {isAdmin ? "Admin" : "Login"}
-            </IconButton>
-          </Tooltip>
+        {/* Action Controls Footer Component Inside Mobile Menu Side Drawer */}
+        <Box sx={{ borderTop: isDark ? "1px solid #1e293b" : "1px solid #e2e8f0", px: 1.5, py: 1.5, display: "flex", gap: 1, mt: "auto" }}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setAdminDialogOpen(true);
+              setOpen(false);
+            }}
+            startIcon={<SecurityRoundedIcon />}
+            sx={{
+              flex: 1,
+              color: "#fff",
+              bgcolor: isAdmin ? "#10b981" : "#0d6bde",
+              borderRadius: "12px",
+              fontWeight: 900,
+              fontSize: 13,
+              py: 1,
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": { bgcolor: isAdmin ? "#059669" : "#0a58b8", boxShadow: "none" },
+            }}
+          >
+            {isAdmin ? "Admin" : "Login"}
+          </Button>
 
           <Tooltip title={`Switch to ${isDark ? "light" : "dark"} mode`}>
             <IconButton
@@ -401,6 +413,8 @@ export default function Header() {
                 color: "#fff",
                 bgcolor: "#0d6bde",
                 borderRadius: "12px",
+                width: 45,
+                height: 45,
                 "&:hover": { bgcolor: "#0a58b8" },
               }}
             >

@@ -114,7 +114,7 @@ export default function Footer() {
                 );
               })}
 
-              {/* Utility Section */}
+              {/* Utility Section - Appended with matching About and Contact route links */}
               <Box 
                 sx={{ 
                   display: "flex", 
@@ -124,12 +124,39 @@ export default function Footer() {
                   pl: 4
                 }}
               >
+                <Link href="/about" className="no-underline">
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontSize: 13.5,
+                      color: pathname === "/about" ? (isDark ? "#38bdf8" : "#0d6bde") : "inherit", 
+                      fontWeight: pathname === "/about" ? 700 : 500,
+                      "&:hover": { color: isDark ? "#f1f5f9" : "#0f172a" } 
+                    }}
+                  >
+                    About Us
+                  </Typography>
+                </Link>
+                <Link href="/contact" className="no-underline">
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontSize: 13.5,
+                      color: pathname === "/contact" ? (isDark ? "#38bdf8" : "#0d6bde") : "inherit", 
+                      fontWeight: pathname === "/contact" ? 700 : 500,
+                      "&:hover": { color: isDark ? "#f1f5f9" : "#0f172a" } 
+                    }}
+                  >
+                    Contact Us
+                  </Typography>
+                </Link>
                 <Link href="/privacy" className="no-underline">
                   <Typography 
                     variant="body2" 
                     sx={{ 
                       fontSize: 13.5,
-                      color: "inherit", 
+                      color: pathname === "/privacy" ? (isDark ? "#38bdf8" : "#0d6bde") : "inherit", 
+                      fontWeight: pathname === "/privacy" ? 700 : 500,
                       "&:hover": { color: isDark ? "#f1f5f9" : "#0f172a" } 
                     }}
                   >
@@ -141,7 +168,8 @@ export default function Footer() {
                     variant="body2" 
                     sx={{ 
                       fontSize: 13.5,
-                      color: "inherit", 
+                      color: pathname === "/terms" ? (isDark ? "#38bdf8" : "#0d6bde") : "inherit", 
+                      fontWeight: pathname === "/terms" ? 700 : 500,
                       "&:hover": { color: isDark ? "#f1f5f9" : "#0f172a" } 
                     }}
                   >

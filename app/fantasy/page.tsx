@@ -21,6 +21,7 @@ import {
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import SportsCricketRoundedIcon from "@mui/icons-material/SportsCricketRounded";
+import SportsSoccerRoundedIcon from "@mui/icons-material/SportsSoccerRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
@@ -31,14 +32,19 @@ import AdCard from "@/app/components/AdCard";
 
 export default function FantasyPage() {
   const muiTheme = useTheme();
-  const [matches, setMatches] = useState<any[]>([]);
+  const [cricketMatches, setCricketMatches] = useState<any[]>([]);
+  const [footballMatches, setFootballMatches] = useState<any[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/series-matches")
       .then((res) => res.json())
-      .then((res) => setMatches(res.data || []))
+      .then((res) => {
+        const data = res.data || [];
+        setCricketMatches(data.filter((m: any) => m.sportType !== "football"));
+        setFootballMatches(data.filter((m: any) => m.sportType === "football"));
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -46,7 +52,8 @@ export default function FantasyPage() {
     <Box sx={{ minHeight: "100dvh", bgcolor: muiTheme.palette.background.default, color: muiTheme.palette.text.primary }}>
       <Header />
 
-      <Box component="main" sx={{ mx: "auto", maxWidth: { xs: "448px", lg: "1280px" }, pt: 7, pb: 24 }}>
+      {/* Expanded maxWidth on desktop to nicely fit all 5 columns without squeezing the cards */}
+      <Box component="main" sx={{ mx: "auto", maxWidth: { xs: "448px", md: "100%", lg: "1440px" }, pt: 7, pb: 24 }}>
         <Box sx={{ px: 2, pt: 2, display: "flex", gap: 1 }}>
           <Button
             component={Link}
@@ -82,7 +89,7 @@ export default function FantasyPage() {
           </Button>
         </Box>
 
-        <Box sx={{ px: 2, pt: 2 }}>
+        <Box sx={{ px: 2, pt: 2, pb: 1 }}>
           <Typography sx={{ fontSize: 32, fontWeight: 950, color: "#0f172a" }}>
             AI Fantasy Teams
           </Typography>
@@ -100,31 +107,92 @@ export default function FantasyPage() {
               Loading matches...
             </Typography>
           </Card>
-        ) : matches.length === 0 ? (
-          <Card sx={{ m: 2, p: 4, borderRadius: "24px", textAlign: "center" }}>
-            <SportsCricketRoundedIcon sx={{ fontSize: 54, color: "#94a3b8" }} />
-
-            <Typography sx={{ mt: 2, fontSize: 20, fontWeight: 950 }}>
-              No matches found
-            </Typography>
-
-            <Typography sx={{ mt: 1, fontSize: 14, color: "#64748b" }}>
-              No today or upcoming 7-day matches available.
-            </Typography>
-          </Card>
         ) : (
-          <Box sx={{ px: 2, pt: 2, display: "grid", gap: 2 }}>
-            {matches.map((match, index) => (
-              <Box key={match.id}>
-                <MatchFantasyCard
-                  match={match}
-                  onClick={() => setSelectedMatch(match)}
-                />
+          <>
+            {/* --- CRICKET SECTION --- */}
+            <Box sx={{ pt: 2 }}>
+              <Typography sx={{ px: 2, fontSize: 20, fontWeight: 950, color: "#0f172a", mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+                <SportsCricketRoundedIcon sx={{ color: "#0d6bde" }} /> Cricket Matches
+              </Typography>
+              
+              {cricketMatches.length === 0 ? (
+                <Typography sx={{ px: 2, fontSize: 14, color: "#64748b" }}>No today or upcoming cricket matches available.</Typography>
+              ) : (
+                <Box
+                  sx={{
+                    display: { xs: "flex", md: "grid" },
+                    // Configured to transition from 2 columns on tablets to 5 columns on large desktop viewports
+                    gridTemplateColumns: { md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)", xl: "repeat(5, 1fr)" },
+                    gap: 2,
+                    px: 2,
+                    pb: 2,
+                    overflowX: { xs: "auto", md: "visible" },
+                    scrollSnapType: { xs: "x mandatory", md: "none" },
+                    WebkitOverflowScrolling: "touch",
+                    "&::-webkit-scrollbar": { display: "none" },
+                  }}
+                >
+                  {cricketMatches.map((match) => (
+                    <Box 
+                      key={match.id} 
+                      sx={{ 
+                        flex: { xs: "0 0 82%", md: "1" }, 
+                        scrollSnapAlign: "start" 
+                      }}
+                    >
+                      <MatchFantasyCard
+                        match={match}
+                        onClick={() => setSelectedMatch(match)}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
 
-                {(index + 1) % 4 === 0 && <AdCard />}
-              </Box>
-            ))}
-          </Box>
+            <AdCard />
+
+            {/* --- FOOTBALL SECTION --- */}
+            <Box sx={{ pt: 2 }}>
+              <Typography sx={{ px: 2, fontSize: 20, fontWeight: 950, color: "#0f172a", mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+                <SportsSoccerRoundedIcon sx={{ color: "#16a34a" }} /> Football Matches
+              </Typography>
+
+              {footballMatches.length === 0 ? (
+                <Typography sx={{ px: 2, fontSize: 14, color: "#64748b" }}>No today or upcoming football matches available.</Typography>
+              ) : (
+                <Box
+                  sx={{
+                    display: { xs: "flex", md: "grid" },
+                    // Set up matching 5 columns structure for desktop viewports
+                    gridTemplateColumns: { md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)", xl: "repeat(5, 1fr)" },
+                    gap: 2,
+                    px: 2,
+                    pb: 2,
+                    overflowX: { xs: "auto", md: "visible" },
+                    scrollSnapType: { xs: "x mandatory", md: "none" },
+                    WebkitOverflowScrolling: "touch",
+                    "&::-webkit-scrollbar": { display: "none" },
+                  }}
+                >
+                  {footballMatches.map((match) => (
+                    <Box 
+                      key={match.id} 
+                      sx={{ 
+                        flex: { xs: "0 0 82%", md: "1" }, 
+                        scrollSnapAlign: "start" 
+                      }}
+                    >
+                      <MatchFantasyCard
+                        match={match}
+                        onClick={() => setSelectedMatch(match)}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          </>
         )}
 
         <AdCard />
@@ -156,16 +224,17 @@ function MatchFantasyCard({ match, onClick }: any) {
         cursor: "pointer",
         transition: "0.25s ease",
         bgcolor: "#fff",
+        height: "100%", 
         "&:hover": {
           transform: "translateY(-3px)",
           boxShadow: "0 10px 28px rgba(13,107,222,0.16)",
         },
       }}
     >
-      <Box sx={{ bgcolor: "#0d6bde", color: "#fff", p: 2 }}>
+      <Box sx={{ bgcolor: match.sportType === "football" ? "#16a34a" : "#0d6bde", color: "#fff", p: 2 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1 }}>
           <Chip
-            label={match.matchType?.toUpperCase() || "T20"}
+            label={match.matchType?.toUpperCase() || (match.sportType === "football" ? "MATCH" : "T20")}
             size="small"
             sx={{
               bgcolor: "rgba(255,255,255,0.18)",
@@ -178,7 +247,7 @@ function MatchFantasyCard({ match, onClick }: any) {
             <Chip
               label="Fantasy"
               size="small"
-              sx={{ bgcolor: "#16a34a", color: "#fff", fontWeight: 900 }}
+              sx={{ bgcolor: match.sportType === "football" ? "#0d6bde" : "#16a34a", color: "#fff", fontWeight: 900 }}
             />
           )}
         </Box>
@@ -195,6 +264,7 @@ function MatchFantasyCard({ match, onClick }: any) {
             fontWeight: 900,
             color: "#0f172a",
             lineHeight: 1.45,
+            minHeight: "40px", 
           }}
         >
           {match.name}
@@ -214,9 +284,9 @@ function MatchFantasyCard({ match, onClick }: any) {
           </Typography>
 
           <Box sx={{ mt: 1, display: "flex", alignItems: "center", gap: 0.8 }}>
-            <AccessTimeRoundedIcon sx={{ fontSize: 16, color: "#0d6bde" }} />
+            <AccessTimeRoundedIcon sx={{ fontSize: 16, color: match.sportType === "football" ? "#16a34a" : "#0d6bde" }} />
 
-            <Typography sx={{ fontSize: 13, fontWeight: 800, color: "#0d6bde" }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 800, color: match.sportType === "football" ? "#16a34a" : "#0d6bde" }}>
               {match.dateTimeGMT
                 ? new Date(match.dateTimeGMT).toLocaleString()
                 : "Date TBD"}
@@ -235,12 +305,12 @@ function MatchFantasyCard({ match, onClick }: any) {
           sx={{
             mt: 2,
             height: 44,
-            bgcolor: "#0d6bde",
+            bgcolor: match.sportType === "football" ? "#16a34a" : "#0d6bde",
             borderRadius: "999px",
             fontWeight: 900,
             textTransform: "none",
             boxShadow: "none",
-            "&:hover": { bgcolor: "#0a58b8", boxShadow: "none" },
+            "&:hover": { bgcolor: match.sportType === "football" ? "#15803d" : "#0a58b8", boxShadow: "none" },
           }}
         >
           AI Fantasy Options
@@ -269,7 +339,7 @@ function FantasyOptionDialog({ match, open, onClose }: any) {
     >
       <DialogTitle
         sx={{
-          bgcolor: "#0d6bde",
+          bgcolor: match.sportType === "football" ? "#16a34a" : "#0d6bde",
           color: "#fff",
           display: "flex",
           justifyContent: "space-between",
@@ -295,13 +365,11 @@ function FantasyOptionDialog({ match, open, onClose }: any) {
       <DialogContent sx={{ p: 2 }}>
         <Box sx={{ display: "grid", gap: 2 }}>
           <OptionCard
-            title="Dream11 Team"
+            title={match.sportType === "football" ? "Dream11 Football Team" : "Dream11 Team"}
             description="Generate full-match AI suggested teams with captain and vice-captain."
             href={`/fantasy/${match.id}?option=dream11`}
-            color="#0d6bde"
+            color={match.sportType === "football" ? "#16a34a" : "#0d6bde"}
           />
-
-         
 
           <Box
             sx={{

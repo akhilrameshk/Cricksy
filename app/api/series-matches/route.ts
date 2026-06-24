@@ -2,7 +2,7 @@
 import fs from "fs";
 import path from "path";
 
-const SERIES_ID = "87c62aac-bc3c-4738-ab93-19da0690488f";
+const SERIES_ID = "f3e5c7dd-332c-4893-9067-aa2bfe6d2b85";
 
 const CACHE_DIR = path.join(process.cwd(), "cache");
 const CACHE_FILE = path.join(CACHE_DIR, "series-matches.json");
